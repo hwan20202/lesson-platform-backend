@@ -5,24 +5,22 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "members")
-public class Member {
+@Table(name = "profiles")
+public class Profile {
 
     @Id
     @Column(name = "member_id", nullable = false)
-    private String id;
+    private String memberId;
 
-    @Column(name = "nickname", nullable = false)
-    private String nickname;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-    @Column(name = "phone_num", nullable = false)
-    private String phoneNum;
+    private String image;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
-    @Column(name = "password", nullable = false)
-    private String password;
+    @Column(name = "introduce", nullable = false)
+    private String introduce;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -32,4 +30,7 @@ public class Member {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "category_id", nullable = false)
+    private Long categoryId;
 }
