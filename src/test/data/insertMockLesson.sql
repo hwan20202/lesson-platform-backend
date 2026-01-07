@@ -8,7 +8,7 @@ INSERT INTO lessons (
     close_at,
     updated_at,
     deleted_at,
-    memtor_id,
+    mentor_id,
     category_id
 ) VALUES
       ('lesson-001', 'MENTORING', '/img/lesson1.png', '1:1 자바 기초 수업', '서울', NOW(), NULL, NULL, NULL, 'mentor-001', 1),
