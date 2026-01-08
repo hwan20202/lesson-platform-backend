@@ -16,7 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     Double findAverageScoreByLessonId(@Param("lessonId") String lessonId);
 
     @Query("SELECT new com.kosa.fillinv.review.dto.ReviewWithNicknameVO(r, m.nickname) " +
-            "FROM Review r JOIN Member m ON r.writerId = m.id " +
+            "FROM Review r LEFT JOIN Member m ON r.writerId = m.id " +
             "WHERE r.lessonId = :lessonId")
     Page<ReviewWithNicknameVO> findReviewsWithNicknameByLessonId(@Param("lessonId") String lessonId, Pageable pageable);
 }
