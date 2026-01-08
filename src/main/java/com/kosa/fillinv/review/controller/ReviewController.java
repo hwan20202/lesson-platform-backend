@@ -19,12 +19,14 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    private static final int MAX_PAGE_SIZE = 100;
+
     @GetMapping("/lessons/{lessonId}/reviews")
     public ResponseEntity<LessonReviewListResponseDTO> getLessonReviewList(
             @PathVariable("lessonId") String lessonId,
             @PageableDefault(size = 20) Pageable pageable) {
-        if (pageable.getPageSize() > 100) {
-            pageable = PageRequest.of(pageable.getPageNumber(), 100, pageable.getSort());
+        if (pageable.getPageSize() > MAX_PAGE_SIZE) {
+            pageable = PageRequest.of(pageable.getPageNumber(), MAX_PAGE_SIZE, pageable.getSort());
         }
         LessonReviewListResponseDTO reviewList = reviewService.getReviewListByLesson(lessonId, pageable);
         return ResponseEntity.ok(reviewList);
