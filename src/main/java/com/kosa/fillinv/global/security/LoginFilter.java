@@ -50,7 +50,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomMemberDetails customMemberDetails = (CustomMemberDetails) authResult.getPrincipal();
         String email = customMemberDetails.getUsername();
 
-        String token = jwtUtil.createJwt(email, 60 * 60 * 1000L);
+        String token = jwtUtil.createJwt(email, 60 * 60 * 1000L); // 1 시간
 
         response.addHeader("Authorization", "Bearer " + token);
     }
@@ -59,5 +59,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException failed) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
     }
 }

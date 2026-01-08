@@ -2,7 +2,7 @@ package com.kosa.fillinv.category.controller;
 
 import com.kosa.fillinv.category.dto.CategoryResponseDto;
 import com.kosa.fillinv.category.service.CategoryService;
-import com.kosa.fillinv.global.dto.ResponseDto;
+import com.kosa.fillinv.member.dto.MemberApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +18,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseDto<List<CategoryResponseDto>> getAllCategories() {
-        return ResponseDto.ok(categoryService.getAllCategories());
+    public MemberApiResponse<List<CategoryResponseDto>> getAllCategories() {
+        return MemberApiResponse.ok(categoryService.getAllCategories());
     }
 }
