@@ -1,9 +1,15 @@
 package com.kosa.fillinv.category.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "categories")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category {
 
     @Id
@@ -17,4 +23,12 @@ public class Category {
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
     private Category parentCategory;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

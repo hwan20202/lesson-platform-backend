@@ -38,4 +38,28 @@ public class Profile {
 
     @Column(name = "category_id", nullable = false)
     private Long categoryId;
+
+    public void updateImage(String image) {
+        this.image = image;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateIntroduceAndCategory(String introduce, Long categoryId) {
+        this.introduce = introduce;
+        this.categoryId = categoryId;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 회원가입 -> 기본 프로필 생성으로 인한 기본값 설정 메서드 수정 예정
+    private static final String INTRODUCTION = "안녕하세요! %s입니다.";
+    private static final Long CATEGORY_ID = 1L;
+
+    public static Profile createDefault(Member member) {
+        return Profile.builder()
+                .member(member)
+                .introduce(String.format(INTRODUCTION, member.getNickname()))
+                .createdAt(LocalDateTime.now())
+                .categoryId(CATEGORY_ID)
+                .build();
+    }
 }
