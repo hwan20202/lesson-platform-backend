@@ -8,6 +8,7 @@ import java.util.List;
 
 public record LessonDTO(
         String id,
+        String title,
         LessonType lessonType,
         String thumbnailImage,
         String description,
@@ -24,6 +25,7 @@ public record LessonDTO(
     public static LessonDTO of(Lesson lesson) {
         return new LessonDTO(
                 lesson.getId(),
+                lesson.getTitle(),
                 lesson.getLessonType(),
                 lesson.getThumbnailImage(),
                 lesson.getDescription(),

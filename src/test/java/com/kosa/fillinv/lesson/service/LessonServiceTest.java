@@ -60,6 +60,7 @@ class LessonServiceTest {
 
         // then
         Lesson result = lessonRepository.findById(lesson.id()).orElseThrow();
+        assertEquals(command.title(), result.getTitle());
         assertEquals(command.description(), result.getDescription());
         assertEquals(command.lessonType(), result.getLessonType());
         assertEquals(command.thumbnailImage(), result.getThumbnailImage());
@@ -124,7 +125,8 @@ class LessonServiceTest {
         LessonDTO result = lessonService.readLessonById(created.id()).orElseThrow();
 
         // then
-
+        assertEquals(created.id(), result.id());
+        assertEquals(created.title(), result.title());
         assertEquals(created.description(), result.description());
         assertEquals(created.lessonType(), result.lessonType());
         assertEquals(created.thumbnailImage(), result.thumbnailImage());
@@ -140,6 +142,7 @@ class LessonServiceTest {
     @DisplayName("레슨 목록을 조회한다.")
     void readLessonAll() {
         // given
+        List<LessonDTO> initial = lessonService.readLessonAll();
         lessonService.createLesson(createCommand());
         lessonService.createLesson(createCommand());
 
@@ -147,7 +150,7 @@ class LessonServiceTest {
         List<LessonDTO> lessons = lessonService.readLessonAll();
 
         // then
-        assertTrue(lessons.size() >= 2);
+        assertTrue(lessons.size() >= initial.size() + 2);
     }
 
     @Test
@@ -170,6 +173,7 @@ class LessonServiceTest {
                 lessonService.updateLesson(created.id(), updateCommand);
 
         // then
+        assertEquals(updateCommand.title(), updated.title());
         assertEquals(updateCommand.thumbnailImage() , updated.thumbnailImage());
         assertEquals(updateCommand.description(), updated.description());
         assertEquals(updateCommand.location(), updated.location());
