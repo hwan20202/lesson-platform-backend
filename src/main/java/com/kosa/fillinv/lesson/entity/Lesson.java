@@ -71,7 +71,6 @@ public class Lesson extends BaseEntity {
         this.mentorId = mentorId;
         this.categoryId = categoryId;
         this.closeAt = closeAt;
-        this.createdAt = Instant.now();
         this.availableTimeList = new ArrayList<>();
         this.optionList = new ArrayList<>();
     }
@@ -113,7 +112,7 @@ public class Lesson extends BaseEntity {
         optionList.forEach(Option::delete);
     }
 
-    public  void addAvailableTime(AvailableTime availableTime) {
+    public void addAvailableTime(AvailableTime availableTime) {
         availableTime.setLesson(this);
         this.availableTimeList.add(availableTime);
     }

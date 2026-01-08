@@ -3,7 +3,6 @@ package com.kosa.fillinv.lesson.service.dto;
 import com.kosa.fillinv.lesson.entity.AvailableTime;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 public record AvailableTimeDTO(
         String id,

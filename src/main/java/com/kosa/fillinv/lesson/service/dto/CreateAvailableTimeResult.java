@@ -1,7 +1,6 @@
 package com.kosa.fillinv.lesson.service.dto;
 
 import com.kosa.fillinv.lesson.entity.AvailableTime;
-import com.kosa.fillinv.lesson.entity.Lesson;
 
 import java.time.*;
 

@@ -3,7 +3,6 @@ package com.kosa.fillinv.lesson.service.dto;
 import com.kosa.fillinv.lesson.entity.LessonType;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 public record CreateLessonCommand(
