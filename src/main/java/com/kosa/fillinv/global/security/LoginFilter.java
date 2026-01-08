@@ -21,6 +21,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final Long jwtExpirationTime;
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Override
@@ -50,7 +51,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomMemberDetails customMemberDetails = (CustomMemberDetails) authResult.getPrincipal();
         String email = customMemberDetails.getUsername();
 
-        String token = jwtUtil.createJwt(email, 60 * 60 * 1000L); // 1 시간
+        String token = jwtUtil.createJwt(email, jwtExpirationTime);
 
         response.addHeader("Authorization", "Bearer " + token);
     }
