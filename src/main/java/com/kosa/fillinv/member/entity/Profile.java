@@ -3,8 +3,13 @@ package com.kosa.fillinv.member.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "profiles")
 public class Profile {
 

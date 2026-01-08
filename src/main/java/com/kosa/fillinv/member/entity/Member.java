@@ -4,7 +4,13 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+import lombok.*;
+
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "members")
 public class Member {
 
