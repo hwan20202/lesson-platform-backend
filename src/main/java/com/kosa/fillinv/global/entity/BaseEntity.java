@@ -1,9 +1,6 @@
 package com.kosa.fillinv.global.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -24,6 +21,11 @@ public abstract class BaseEntity {
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
     }
 
     public void delete() {

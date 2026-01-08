@@ -4,7 +4,6 @@ import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.LessonType;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 public record CreateLessonResult(

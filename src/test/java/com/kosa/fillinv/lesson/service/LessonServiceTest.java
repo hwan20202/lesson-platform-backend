@@ -167,7 +167,7 @@ class LessonServiceTest {
                 "수정된 설명",
                 "부산",
                 1L,
-                Instant.now().truncatedTo(ChronoUnit.SECONDS) .plus(7, ChronoUnit.DAYS)
+                Instant.now().truncatedTo(ChronoUnit.SECONDS).plus(7, ChronoUnit.DAYS)
         );
 
         // when
@@ -181,6 +181,8 @@ class LessonServiceTest {
         assertEquals(updateCommand.location(), updated.location());
         assertEquals(updateCommand.categoryId(), updated.categoryId());
         assertEquals(updateCommand.closeAt(), updated.closeAt());
+        assertNotNull(updated.updatedAt());
+        System.out.println(updated.updatedAt());
     }
 
     @Test

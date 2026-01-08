@@ -8,7 +8,6 @@ import com.kosa.fillinv.lesson.exception.LessonNotFoundException;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.service.dto.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,10 +79,10 @@ public class LessonService {
     }
 
     @Transactional
-    public List<CreateAvailableTimeResult> addAvailableTime(String lessonId, List<CreateAvailableTimeCommand> command) {
+    public List<CreateAvailableTimeResult> addAvailableTime(String lessonId, List<CreateAvailableTimeCommand> commandList) {
         Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
 
-        List<AvailableTime> availableTimeList = command.stream().map(c -> createAvailableTimeEntity(lesson, c)).toList();
+        List<AvailableTime> availableTimeList = commandList.stream().map(c -> createAvailableTimeEntity(lesson, c)).toList();
         lesson.addAvailableTime(availableTimeList);;
         lessonRepository.save(lesson);
 
