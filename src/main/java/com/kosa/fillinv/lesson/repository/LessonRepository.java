@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface LessonRepository extends JpaRepository<Lesson, String> {
 
     Optional<Lesson> findByIdAndDeletedAtIsNull(String id);
+
     List<Lesson> findAllByDeletedAtIsNull();
 
 }

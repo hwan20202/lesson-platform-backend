@@ -123,7 +123,7 @@ public class Lesson extends BaseEntity {
 
     public void removeAvailableTime(String availableTimeId) {
         this.availableTimeList.forEach(availableTime -> {
-           if (availableTime.getId().equals(availableTimeId)) availableTime.delete();
+            if (availableTime.getId().equals(availableTimeId)) availableTime.delete();
         });
     }
 
@@ -147,13 +147,13 @@ public class Lesson extends BaseEntity {
     }
 
     public void removeOption(String optionId) {
-        this.optionList.forEach( option -> {
+        this.optionList.forEach(option -> {
             if (option.getId().equals(optionId)) option.delete();
         });
     }
 
     public void removeOption(List<String> optionIdList) {
-        this.optionList.forEach( option -> {
+        this.optionList.forEach(option -> {
             if (optionIdList.contains(option.getId())) option.delete();
         });
     }

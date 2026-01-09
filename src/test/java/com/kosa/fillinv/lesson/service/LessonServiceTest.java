@@ -1,9 +1,9 @@
 package com.kosa.fillinv.lesson.service;
 
+import com.kosa.fillinv.global.exception.ResourceException;
 import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.Option;
-import com.kosa.fillinv.lesson.exception.InvalidLessonCreateException;
 import com.kosa.fillinv.lesson.repository.AvailableTimeRepository;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.repository.OptionRepository;
@@ -58,7 +58,8 @@ class LessonServiceTest {
 
         // when
         CreateLessonResult lesson = lessonService.createLesson(command);
-        entityManager.flush(); entityManager.clear();
+        entityManager.flush();
+        entityManager.clear();
 
         // then
         Lesson result = lessonRepository.findById(lesson.id()).orElseThrow();
@@ -113,7 +114,7 @@ class LessonServiceTest {
 
         // when & then
         assertThatThrownBy(() -> lessonService.createLesson(command))
-                .isInstanceOf(InvalidLessonCreateException.class);
+                .isInstanceOf(ResourceException.InvalidArgument.class);
     }
 
     @Test
@@ -121,7 +122,8 @@ class LessonServiceTest {
     void readLessonById() {
         // given
         CreateLessonResult created = lessonService.createLesson(createCommand());
-        entityManager.flush(); entityManager.clear();
+        entityManager.flush();
+        entityManager.clear();
 
         // when
         LessonDTO result = lessonService.readLessonById(created.id()).orElseThrow();
@@ -176,7 +178,7 @@ class LessonServiceTest {
 
         // then
         assertEquals(updateCommand.title(), updated.title());
-        assertEquals(updateCommand.thumbnailImage() , updated.thumbnailImage());
+        assertEquals(updateCommand.thumbnailImage(), updated.thumbnailImage());
         assertEquals(updateCommand.description(), updated.description());
         assertEquals(updateCommand.location(), updated.location());
         assertEquals(updateCommand.categoryId(), updated.categoryId());
@@ -193,7 +195,8 @@ class LessonServiceTest {
 
         // when
         lessonService.deleteLesson(created.id());
-        entityManager.flush(); entityManager.clear();
+        entityManager.flush();
+        entityManager.clear();
 
         // then
         Optional<LessonDTO> result = lessonService.readLessonById(created.id());
@@ -224,10 +227,10 @@ class LessonServiceTest {
         assertTrue(
                 result.availableTimeDTOList().stream()
                         .anyMatch(at ->
-                            at.startTime().equals(command.startTime()) &&
-                                    at.endTime().equals(command.endTime()) &&
-                                    at.price().equals(command.price()) &&
-                                    at.lessonId().equals(created.id())
+                                at.startTime().equals(command.startTime()) &&
+                                        at.endTime().equals(command.endTime()) &&
+                                        at.price().equals(command.price()) &&
+                                        at.lessonId().equals(created.id())
                         )
         );
     }
@@ -239,10 +242,10 @@ class LessonServiceTest {
         CreateLessonResult created = lessonService.createLesson(createCommand());
 
         Instant start1 = toInstant(LocalDateTime.of(2025, 1, 10, 14, 0));
-        Instant end1   = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
+        Instant end1 = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
 
         Instant start2 = toInstant(LocalDateTime.of(2025, 1, 17, 14, 0));
-        Instant end2   = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
+        Instant end2 = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
 
         List<CreateAvailableTimeCommand> commands = List.of(
                 createAvailableTimeCommand(start1, end1, 1000),
@@ -286,10 +289,10 @@ class LessonServiceTest {
         CreateLessonResult created = lessonService.createLesson(createCommand());
 
         Instant start1 = toInstant(LocalDateTime.of(2025, 1, 10, 14, 0));
-        Instant end1   = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
+        Instant end1 = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
 
         Instant start2 = toInstant(LocalDateTime.of(2025, 1, 17, 14, 0));
-        Instant end2   = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
+        Instant end2 = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
 
         List<CreateAvailableTimeCommand> commands = List.of(
                 createAvailableTimeCommand(start1, end1, 1000),
@@ -315,10 +318,10 @@ class LessonServiceTest {
         CreateLessonResult created = lessonService.createLesson(createCommand());
 
         Instant start1 = toInstant(LocalDateTime.of(2025, 1, 10, 14, 0));
-        Instant end1   = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
+        Instant end1 = toInstant(LocalDateTime.of(2025, 1, 10, 16, 0));
 
         Instant start2 = toInstant(LocalDateTime.of(2025, 1, 17, 14, 0));
-        Instant end2   = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
+        Instant end2 = toInstant(LocalDateTime.of(2025, 1, 17, 16, 0));
 
         List<CreateAvailableTimeCommand> commands = List.of(
                 createAvailableTimeCommand(start1, end1, 1000),
@@ -373,7 +376,7 @@ class LessonServiceTest {
         CreateOptionCommand command1 = createOptionCommand("option1", 30, 1000);
         CreateOptionCommand command2 = createOptionCommand("option2", 60, 2000);
 
-        List<CreateOptionCommand> commandList = List.of(command1 ,command2);
+        List<CreateOptionCommand> commandList = List.of(command1, command2);
 
         // when
         lessonService.addOption(created.id(), commandList);
@@ -413,7 +416,7 @@ class LessonServiceTest {
         CreateOptionCommand command1 = createOptionCommand("option1", 30, 1000);
         CreateOptionCommand command2 = createOptionCommand("option2", 60, 2000);
 
-        List<CreateOptionCommand> commandList = List.of(command1 ,command2);
+        List<CreateOptionCommand> commandList = List.of(command1, command2);
 
         List<CreateOptionResult> createOptionResults = lessonService.addOption(created.id(), commandList);
 
@@ -436,7 +439,7 @@ class LessonServiceTest {
         CreateOptionCommand command1 = createOptionCommand("option1", 30, 1000);
         CreateOptionCommand command2 = createOptionCommand("option2", 60, 2000);
 
-        List<CreateOptionCommand> commandList = List.of(command1 ,command2);
+        List<CreateOptionCommand> commandList = List.of(command1, command2);
 
         List<CreateOptionResult> createOptionResults = lessonService.addOption(created.id(), commandList);
 
@@ -449,7 +452,6 @@ class LessonServiceTest {
         LessonDTO result = lessonService.readLessonById(created.id()).orElseThrow();
         assertEquals(created.optionResultList().size(), result.optionDTOList().size());
     }
-
 
 
     private CreateOptionCommand createOptionCommand() {
@@ -534,6 +536,4 @@ class LessonServiceTest {
     private Instant toInstant(LocalDateTime ldt) {
         return ldt.atZone(ZoneId.of("Asia/Seoul")).toInstant();
     }
-
-
 }
