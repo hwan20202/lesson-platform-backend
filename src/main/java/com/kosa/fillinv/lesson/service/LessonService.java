@@ -1,10 +1,9 @@
 package com.kosa.fillinv.lesson.service;
 
+import com.kosa.fillinv.global.exception.ResourceException;
 import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.Option;
-import com.kosa.fillinv.lesson.exception.InvalidLessonCreateException;
-import com.kosa.fillinv.lesson.exception.LessonNotFoundException;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.service.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.kosa.fillinv.lesson.exception.LessonError.*;
+import static com.kosa.fillinv.lesson.error.LessonError.*;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +49,7 @@ public class LessonService {
 
     @Transactional
     public UpdateLessonResult updateLesson(String lessonId, UpdateLessonCommand command) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         lesson.updateTitle(command.title());
         lesson.updateThumbnailImage(command.thumbnailImage());
@@ -69,7 +68,7 @@ public class LessonService {
 
     @Transactional
     public CreateAvailableTimeResult addAvailableTime(String lessonId, CreateAvailableTimeCommand command) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         AvailableTime availableTime = createAvailableTimeEntity(lesson, command);
         lesson.addAvailableTime(availableTime);
@@ -80,7 +79,7 @@ public class LessonService {
 
     @Transactional
     public List<CreateAvailableTimeResult> addAvailableTime(String lessonId, List<CreateAvailableTimeCommand> commandList) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         List<AvailableTime> availableTimeList = commandList.stream().map(c -> createAvailableTimeEntity(lesson, c)).toList();
         lesson.addAvailableTime(availableTimeList);;
@@ -91,21 +90,21 @@ public class LessonService {
 
     @Transactional
     public void deleteAvailableTime(String lessonId, String availableTimeId) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         lesson.removeAvailableTime(availableTimeId);
     }
 
     @Transactional
     public void deleteAvailableTime(String lessonId, List<String> availableTimeIdList) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         lesson.removeAvailableTime(availableTimeIdList);
     }
 
     @Transactional
     public CreateOptionResult addOption(String lessonId, CreateOptionCommand command) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         Option option = createOption(lesson, command);
         lesson.addOption(option);
@@ -116,7 +115,7 @@ public class LessonService {
 
     @Transactional
     public List<CreateOptionResult> addOption(String lessonId, List<CreateOptionCommand> commandList) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         List<Option> optionList = commandList.stream().map(c -> createOption(lesson, c)).toList();
         lesson.addOption(optionList);
@@ -127,14 +126,14 @@ public class LessonService {
 
     @Transactional
     public void deleteOption(String lessonId, String optionId) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         lesson.removeOption(optionId);
     }
 
     @Transactional
     public void deleteOption(String lessonId, List<String> optionIdList) {
-        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new LessonNotFoundException(lessonId));
+        Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
 
         lesson.removeOption(optionIdList);
     }
@@ -169,31 +168,31 @@ public class LessonService {
     private Lesson createLessonEntity(CreateLessonCommand command) {
 
         if (command.title() == null || command.title().isBlank()) {
-            throw new InvalidLessonCreateException(TITLE_REQUIRED);
+            throw new ResourceException.InvalidArgument(TITLE_REQUIRED);
         }
 
         if (command.lessonType() == null) {
-            throw new InvalidLessonCreateException(LESSON_TYPE_REQUIRED);
+            throw new ResourceException.InvalidArgument(LESSON_TYPE_REQUIRED);
         }
 
         if (command.thumbnailImage() == null || command.thumbnailImage().isBlank()) {
-            throw new InvalidLessonCreateException(THUMBNAIL_IMAGE_REQUIRED);
+            throw new ResourceException.InvalidArgument(THUMBNAIL_IMAGE_REQUIRED);
         }
 
         if (command.description() == null || command.description().isBlank()) {
-            throw new InvalidLessonCreateException(DESCRIPTION_REQUIRED);
+            throw new ResourceException.InvalidArgument(DESCRIPTION_REQUIRED);
         }
 
         if (command.location() == null || command.location().isBlank()) {
-            throw new InvalidLessonCreateException(LOCATION_REQUIRED);
+            throw new ResourceException.InvalidArgument(LOCATION_REQUIRED);
         }
 
         if (command.mentorId() == null || command.mentorId().isBlank()) {
-            throw new InvalidLessonCreateException(MENTOR_ID_REQUIRED);
+            throw new ResourceException.InvalidArgument(MENTOR_ID_REQUIRED);
         }
 
         if (command.categoryId() == null) {
-            throw new InvalidLessonCreateException(CATEGORY_ID_REQUIRED);
+            throw new ResourceException.InvalidArgument(CATEGORY_ID_REQUIRED);
         }
 
         return Lesson.builder()
