@@ -26,7 +26,6 @@ public class Option extends BaseEntity {
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Setter
     @Setter(AccessLevel.PACKAGE)
     @ManyToOne
     @JoinColumn(name = "lesson_id", nullable = false)
