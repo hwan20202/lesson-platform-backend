@@ -12,17 +12,16 @@ import lombok.*;
 @Builder
 public class SignUpDto {
 
-    @NotBlank(message = "이메일은 필수 입력 값입니다.")
-    @Email(message = "이메일 형식이 올바르지 않습니다.")
+    @NotBlank
+    @Email
     private String email;
 
-    @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
-    @Size(min = 8, max = 20, message = "비밀번호는 8자 이상, 20자 이하이어야 합니다.")
+    @NotBlank
     private String password;
 
-    @NotBlank(message = "닉네임은 필수 입력 값입니다.")
+    @NotBlank
     private String nickname;
 
-    @NotBlank(message = "전화번호는 필수 입력 값입니다.")
+    @NotBlank
     private String phoneNum;
 }

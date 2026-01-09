@@ -1,6 +1,8 @@
 package com.kosa.fillinv.member.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "members")
+@SQLDelete(sql = "UPDATE members SET deleted_at = NOW() WHERE member_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Member {
 
     @Id

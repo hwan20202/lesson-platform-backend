@@ -1,6 +1,6 @@
 -- [1] 대분류 삽입 (ID 1 ~ 20)
 INSERT INTO categories (category_id, name, parent_category_id) VALUES
-    (1, '경영·비즈니스', NULL), (2, '서비스기획·운영', NULL), (3, '개발', NULL), (4, '디자인', NULL),
+    (1000, ' ', NULL),(1, '경영·비즈니스', NULL), (2, '서비스기획·운영', NULL), (3, '개발', NULL), (4, '디자인', NULL),
     (5, '데이터·AI', NULL), (6, '마케팅·광고', NULL), (7, '영업', NULL), (8, '미디어·문화·스포츠', NULL),
     (9, '금융·보험', NULL), (10, '연구·R&D', NULL), (11, '교육', NULL), (12, '공공·복지', NULL),
     (13, '건설·건축', NULL), (14, '제조·생산', NULL), (15, '의료·바이오', NULL), (16, '상품기획·MD', NULL),

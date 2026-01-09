@@ -51,7 +51,18 @@ class MemberServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 회원가입을 통해 Member와 Profile이 생성된 상태
+        // 기존 데이터 삭제 및 정리
+        entityManager.createNativeQuery("DELETE FROM profiles").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM members").executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        if (!categoryRepository.existsById(1000L)) {
+            entityManager.createNativeQuery(
+                    "INSERT INTO categories (category_id, name, parent_category_id) VALUES (1000, 'Unspecified', NULL)")
+                    .executeUpdate();
+        }
+
         SignUpDto signUpDto = SignUpDto.builder()
                 .email(EMAIL)
                 .password(PASSWORD)
@@ -61,18 +72,21 @@ class MemberServiceTest {
         memberService.signUp(signUpDto);
         savedMember = memberRepository.findByEmail(EMAIL).orElseThrow();
 
-        // 테스트를 위한 카테고리 데이터 준비
-        if (!categoryRepository.existsById(1L)) {
-            categoryRepository.save(new Category(1L, "General", null));
-        }
-
         entityManager.flush();
         entityManager.clear();
     }
 
     @Test
-    @DisplayName("프로필 정보를 조회한다.")
+    @DisplayName("프로필 정보를 조회")
     void getProfile() {
+        // given
+        // 무조건 1000번 카테고리 생성 (표준 SQL: 없으면 넣음)
+        entityManager.createNativeQuery(
+                "INSERT INTO categories (category_id, name, parent_category_id) " +
+                        "SELECT 1000, 'Unspecified', NULL " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_id = 1000)")
+                .executeUpdate();
+
         // when
         ProfileResponseDto response = memberService.getProfile(EMAIL);
 
@@ -80,11 +94,10 @@ class MemberServiceTest {
         assertThat(response.getEmail()).isEqualTo(EMAIL);
         assertThat(response.getNickname()).isEqualTo(NICKNAME);
         assertThat(response.getPhoneNum()).isEqualTo(PHONE_NUM);
-        assertThat(response.getIntroduction()).contains(NICKNAME); // "안녕하세요! tester입니다."
     }
 
     @Test
-    @DisplayName("프로필 이미지를 수정한다.")
+    @DisplayName("프로필 이미지를 수정")
     void updateProfileImage() {
         // given
         String newImageUrl = "http://example.com/new_image.png";
@@ -100,7 +113,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("닉네임을 수정한다.")
+    @DisplayName("닉네임을 수정")
     void updateNickname() {
         // given
         String newNickname = "newTester";
@@ -116,7 +129,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("중복된 닉네임으로 수정 시 예외가 발생한다.")
+    @DisplayName("중복된 닉네임으로 수정 시 예외가 발생")
     void updateNickname_Duplicate() {
         // given
         String anotherEmail = "change@test.com";
@@ -138,13 +151,18 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("자기소개와 카테고리를 수정한다.")
+    @DisplayName("자기소개와 카테고리를 수정")
     void updateIntroduction() {
         // given
         // 테스트용 카테고리 추가
         Long newCategoryId = 2L;
         if (!categoryRepository.existsById(newCategoryId)) {
-            categoryRepository.save(new Category(newCategoryId, "New Category", null));
+            entityManager
+                    .createNativeQuery(
+                            "INSERT INTO categories (category_id, name, parent_category_id) VALUES (:id, :name, NULL)")
+                    .setParameter("id", newCategoryId)
+                    .setParameter("name", "New Category")
+                    .executeUpdate();
         }
 
         String newIntroduction = "반갑습니다. 새로운 소개글입니다.";
@@ -185,11 +203,11 @@ class MemberServiceTest {
         Profile profile = profileRepository.findById(member.getId()).orElseThrow();
 
         assertThat(member.getNickname()).isEqualTo("newNick");
-        assertThat(profile.getIntroduce()).contains("newNick");
+        assertThat(profile.getIntroduce()).isEmpty();
     }
 
     @Test
-    @DisplayName("중복 이메일로 가입 시 예외가 발생한다.")
+    @DisplayName("중복 이메일로 가입 시 예외가 발생")
     void signUp_DuplicateEmail() {
         // given
         SignUpDto duplicateMember = SignUpDto.builder()
@@ -209,7 +227,7 @@ class MemberServiceTest {
     private CustomMemberDetailsService userDetailsService;
 
     @Test
-    @DisplayName("로그인 시 사용자 정보를 정상적으로 로드한다.")
+    @DisplayName("로그인 시 사용자 정보를 정상적으로 로드")
     void loadUserByUsername_Success() {
         // when
         UserDetails userDetails = userDetailsService
@@ -221,7 +239,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("중복 닉네임으로 회원가입 시 예외가 발생한다.")
+    @DisplayName("중복 닉네임으로 회원가입 시 예외가 발생")
     void signUp_DuplicateNickname() {
         // given
         SignUpDto duplicateMember = SignUpDto.builder()
@@ -238,7 +256,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("중복 전화번호로 회원가입 시 예외가 발생한다.")
+    @DisplayName("중복 전화번호로 회원가입 시 예외가 발생")
     void signUp_DuplicatePhoneNum() {
         // given
         SignUpDto duplicateMember = SignUpDto.builder()
@@ -255,7 +273,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자로 로그인 시도 시 예외가 발생한다.")
+    @DisplayName("존재하지 않는 사용자로 로그인 시도 시 예외가 발생")
     void loadUserByUsername_UserNotFound() {
         // given
         String notFoundEmail = "notfound@example.com";
@@ -264,5 +282,28 @@ class MemberServiceTest {
         assertThatThrownBy(() -> userDetailsService.loadUserByUsername(notFoundEmail))
                 .isInstanceOf(org.springframework.security.core.userdetails.UsernameNotFoundException.class)
                 .hasMessage("해당하는 유저를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 시 소프트 딜리트가 적용")
+    void deleteMember_Success() {
+        // when
+        memberService.deleteMember(EMAIL);
+        entityManager.flush();
+        entityManager.clear();
+
+        // then
+        assertThat(memberRepository.findByEmail(EMAIL)).isEmpty();
+        assertThat(profileRepository.findById(savedMember.getId())).isEmpty();
+        Object memberDeletedAt = entityManager.createNativeQuery("SELECT deleted_at FROM members WHERE member_id = :id")
+                .setParameter("id", savedMember.getId())
+                .getSingleResult();
+        assertThat(memberDeletedAt).isNotNull();
+
+        Object profileDeletedAt = entityManager
+                .createNativeQuery("SELECT deleted_at FROM profiles WHERE member_id = :id")
+                .setParameter("id", savedMember.getId()) // Profile의 PK는 Member ID와 같음
+                .getSingleResult();
+        assertThat(profileDeletedAt).isNotNull();
     }
 }

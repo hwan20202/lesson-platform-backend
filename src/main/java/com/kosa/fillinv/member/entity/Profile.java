@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -11,6 +13,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "profiles")
+@SQLDelete(sql = "UPDATE profiles SET deleted_at = NOW() WHERE member_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Profile {
 
     @Id
@@ -50,14 +54,13 @@ public class Profile {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 회원가입 -> 기본 프로필 생성으로 인한 기본값 설정 메서드 수정 예정
-    private static final String INTRODUCTION = "안녕하세요! %s입니다.";
-    private static final Long CATEGORY_ID = 1L;
+    private static final String INTRODUCTION = "";
+    private static final Long CATEGORY_ID = 1000L;
 
     public static Profile createDefault(Member member) {
         return Profile.builder()
                 .member(member)
-                .introduce(String.format(INTRODUCTION, member.getNickname()))
+                .introduce(INTRODUCTION)
                 .createdAt(LocalDateTime.now())
                 .categoryId(CATEGORY_ID)
                 .build();
