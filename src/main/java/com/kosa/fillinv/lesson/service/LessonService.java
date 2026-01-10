@@ -96,7 +96,7 @@ public class LessonService {
 
         List<AvailableTime> availableTimeList = commandList.stream().map(c -> createAvailableTimeEntity(lesson, c)).toList();
         lesson.addAvailableTime(availableTimeList);
-        ;
+
         lessonRepository.save(lesson);
 
         return availableTimeList.stream().map(CreateAvailableTimeResult::of).toList();
