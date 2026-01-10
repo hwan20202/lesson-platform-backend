@@ -1,4 +1,4 @@
-package com.kosa.fillinv.lesson.controller;
+package com.kosa.fillinv.lesson.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.FileSystemResource;
@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
 
-class LessonControllerTest {
+class LessonApiTest {
 
     RestClient client = RestClient.create("http://localhost:8080");
 
