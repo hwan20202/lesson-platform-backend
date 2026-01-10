@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -78,7 +79,7 @@ public class SecurityConfig {
                 // .requestMatchers("/api/v1/members/login", "/error", "/api/v1/members/signup",
                 // "/v3/api-docs/**",
                 // "/swagger-ui/**", "/swagger-ui.html",
-                // "/api/v1/lessons/*/reviews")
+                // "/api/v1/lessons/*/reviews", "/api/v1/lessons/**")
                 // .permitAll()
                 // .anyRequest().authenticated()
                 )
