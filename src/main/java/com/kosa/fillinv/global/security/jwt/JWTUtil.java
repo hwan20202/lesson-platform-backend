@@ -1,4 +1,4 @@
-package com.kosa.fillinv.global.security;
+package com.kosa.fillinv.global.security.jwt;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;

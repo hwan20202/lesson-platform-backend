@@ -1,4 +1,4 @@
-package com.kosa.fillinv.member.dto;
+package com.kosa.fillinv.member.dto.profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

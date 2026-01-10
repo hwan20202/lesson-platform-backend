@@ -1,9 +1,11 @@
-package com.kosa.fillinv.global.security;
+package com.kosa.fillinv.global.security.filter;
 
+import com.kosa.fillinv.global.security.jwt.JWTUtil;
+import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosa.fillinv.global.response.ErrorCode;
 import com.kosa.fillinv.global.response.ErrorResponse;
-import com.kosa.fillinv.member.dto.LoginRequest;
+import com.kosa.fillinv.member.dto.security.LoginRequest;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

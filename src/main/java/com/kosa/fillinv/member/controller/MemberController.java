@@ -1,9 +1,9 @@
 package com.kosa.fillinv.member.controller;
 
 import com.kosa.fillinv.global.response.SuccessResponse;
-import com.kosa.fillinv.member.dto.SignUpDto;
+import com.kosa.fillinv.member.dto.member.SignUpDto;
 import com.kosa.fillinv.member.service.MemberService;
-import com.kosa.fillinv.global.security.CustomMemberDetails;
+import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

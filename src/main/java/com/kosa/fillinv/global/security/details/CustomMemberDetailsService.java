@@ -1,4 +1,4 @@
-package com.kosa.fillinv.global.security;
+package com.kosa.fillinv.global.security.details;
 
 import com.kosa.fillinv.member.entity.Member;
 import com.kosa.fillinv.member.repository.MemberRepository;

@@ -1,9 +1,9 @@
 package com.kosa.fillinv.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kosa.fillinv.global.security.JWTUtil;
-import com.kosa.fillinv.global.security.JwtAuthenticationFilter;
-import com.kosa.fillinv.global.security.LoginFilter;
+import com.kosa.fillinv.global.security.jwt.JWTUtil;
+import com.kosa.fillinv.global.security.filter.JwtAuthenticationFilter;
+import com.kosa.fillinv.global.security.filter.LoginFilter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

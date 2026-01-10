@@ -1,5 +1,6 @@
-package com.kosa.fillinv.global.exception;
+package com.kosa.fillinv.global.security.exception;
 
+import com.kosa.fillinv.global.exception.CustomGlobalException;
 import com.kosa.fillinv.global.response.ErrorCode;
 
 public class AuthException extends CustomGlobalException {

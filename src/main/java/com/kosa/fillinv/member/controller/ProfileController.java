@@ -1,10 +1,10 @@
 package com.kosa.fillinv.member.controller;
 
 import com.kosa.fillinv.global.response.SuccessResponse;
-import com.kosa.fillinv.member.dto.IntroductionRequestDto;
-import com.kosa.fillinv.member.dto.NicknameRequestDto;
-import com.kosa.fillinv.member.dto.ProfileImageRequestDto;
-import com.kosa.fillinv.member.dto.ProfileResponseDto;
+import com.kosa.fillinv.member.dto.profile.IntroductionRequestDto;
+import com.kosa.fillinv.member.dto.profile.NicknameRequestDto;
+import com.kosa.fillinv.member.dto.profile.ProfileImageRequestDto;
+import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
 import com.kosa.fillinv.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
