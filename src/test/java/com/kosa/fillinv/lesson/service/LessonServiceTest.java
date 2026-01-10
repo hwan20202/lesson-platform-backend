@@ -594,6 +594,7 @@ class LessonServiceTest {
                 "mentor-1",
                 1L,
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).plus(7, ChronoUnit.DAYS),
+                null,
                 List.of(createOptionCommand("option1", 30, 1000), createOptionCommand("option2", 60, 2000)),
                 List.of(createAvailableTimeCommand())
         );
@@ -639,6 +640,7 @@ class LessonServiceTest {
                 mentorId,
                 categoryId,
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).plus(1, ChronoUnit.DAYS),
+                null,
                 optionList,
                 availableTimeList
         );
