@@ -10,7 +10,6 @@ public record RegisterLessonRequest(
         String lessonType,
         String description,
         String location,
-        String mentorId,
         Long categoryId,
         Instant closeAt,
         Integer price,
@@ -18,18 +17,18 @@ public record RegisterLessonRequest(
         List<AvailableTime> availableTimeList
 ) {
 
-    public static RegisterLessonCommand toCommand(RegisterLessonRequest request) {
+    public RegisterLessonCommand toCommand(String mentorId) {
         return new RegisterLessonCommand(
-                request.title,
-                request.lessonType,
-                request.description,
-                request.location,
-                request.mentorId,
-                request.categoryId,
-                request.closeAt,
-                request.price,
-                request.optionList.stream().map(Option::toCommand).toList(),
-                request.availableTimeList.stream().map(AvailableTime::toCommand).toList()
+                this.title,
+                this.lessonType,
+                this.description,
+                this.location,
+                mentorId,
+                this.categoryId,
+                this.closeAt,
+                this.price,
+                this.optionList.stream().map(Option::toCommand).toList(),
+                this.availableTimeList.stream().map(AvailableTime::toCommand).toList()
         );
     }
 
