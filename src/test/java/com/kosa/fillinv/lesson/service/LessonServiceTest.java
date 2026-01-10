@@ -545,7 +545,7 @@ class LessonServiceTest {
         // then
         List<Lesson> all = lessonRepository.findAllByOrderByPriceDesc();
         for (int i = 0; i < lessonDTOS.getContent().size(); i++) {
-            assertEquals(all.get(i).getCreatedAt(), lessonDTOS.getContent().get(i).createdAt());
+            assertEquals(all.get(i).getId(), lessonDTOS.getContent().get(i).id());
         }
     }
 
@@ -561,7 +561,7 @@ class LessonServiceTest {
         // then
         List<Lesson> all = lessonRepository.findAllByOrderByPriceAsc();
         for (int i = 0; i < lessonDTOS.getContent().size(); i++) {
-            assertEquals(all.get(i).getCreatedAt(), lessonDTOS.getContent().get(i).createdAt());
+            assertEquals(all.get(i).getId(), lessonDTOS.getContent().get(i).id());
         }
     }
 
