@@ -1,5 +1,6 @@
 package com.kosa.fillinv.review.service;
 
+import com.kosa.fillinv.review.dto.LessonAvgScore;
 import com.kosa.fillinv.review.dto.LessonReviewListResponseDTO;
 import com.kosa.fillinv.review.dto.LessonReviewResponseDTO;
 import com.kosa.fillinv.review.repository.ReviewRepository;
@@ -32,12 +33,12 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Map<String, Double> getAverageScoreByLessonIds(Set<String> lessonIds) {
-        List<Object[]> averageScoresByLessonIds = reviewRepository.findAverageScoreByLessonIds(lessonIds);
+        List<LessonAvgScore> averageScoresByLessonIds = reviewRepository.findAverageScoreByLessonIds(lessonIds);
 
         return averageScoresByLessonIds.stream().collect(
                 Collectors.toMap(
-                        o -> (String) o[0],
-                        o -> (Double) o[1]
+                        LessonAvgScore::lessonId,
+                        LessonAvgScore::averageScore
                 )
         );
     }
