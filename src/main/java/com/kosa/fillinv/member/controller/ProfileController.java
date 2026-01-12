@@ -21,27 +21,27 @@ public class ProfileController {
 
     @GetMapping("/me")
     public SuccessResponse<ProfileResponseDto> getMyProfile(@AuthenticationPrincipal CustomMemberDetails userDetails) {
-        return SuccessResponse.success(HttpStatus.OK, memberService.getProfile(userDetails.getMemberId()));
+        return SuccessResponse.success(HttpStatus.OK, memberService.getProfile(userDetails.memberId()));
     }
 
     @PatchMapping("/me/image")
     public SuccessResponse<Void> updateProfileImage(@AuthenticationPrincipal CustomMemberDetails userDetails,
             @RequestBody ProfileImageRequestDto requestDto) {
-        memberService.updateProfileImage(userDetails.getMemberId(), requestDto.image());
+        memberService.updateProfileImage(userDetails.memberId(), requestDto.image());
         return SuccessResponse.success(HttpStatus.OK);
     }
 
     @PatchMapping("/me/nickname")
     public SuccessResponse<Void> updateNickname(@AuthenticationPrincipal CustomMemberDetails userDetails,
             @RequestBody NicknameRequestDto requestDto) {
-        memberService.updateNickname(userDetails.getMemberId(), requestDto.nickname());
+        memberService.updateNickname(userDetails.memberId(), requestDto.nickname());
         return SuccessResponse.success(HttpStatus.OK);
     }
 
     @PatchMapping("/me/introduction")
     public SuccessResponse<Void> updateIntroduction(@AuthenticationPrincipal CustomMemberDetails userDetails,
             @RequestBody IntroductionRequestDto requestDto) {
-        memberService.updateIntroduction(userDetails.getMemberId(), requestDto);
+        memberService.updateIntroduction(userDetails.memberId(), requestDto);
         return SuccessResponse.success(HttpStatus.OK);
     }
 }

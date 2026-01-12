@@ -1,5 +1,6 @@
 package com.kosa.fillinv.global.security.jwt;
 
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,25 +14,25 @@ import java.util.Date;
 public class JWTUtil {
 
     private final SecretKey secretKey;
+    private final JwtParser jwtParser;
 
     public JWTUtil(@Value("${jwt.secret}") String secret) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
                 Jwts.SIG.HS256.key().build().getAlgorithm());
+        this.jwtParser = Jwts.parser()
+                .verifyWith(secretKey)
+                .build();
     }
 
     public String getEmail(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
+        return jwtParser
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("email", String.class);
     }
 
     public Boolean isTokenExpired(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
+        return jwtParser
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration()
@@ -39,9 +40,7 @@ public class JWTUtil {
     }
 
     public String getMemberId(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
+        return jwtParser
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("memberId", String.class);

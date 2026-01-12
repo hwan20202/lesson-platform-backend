@@ -1,35 +1,35 @@
 package com.kosa.fillinv.global.security.details;
 
 import com.kosa.fillinv.member.entity.Member;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
-@RequiredArgsConstructor
-public class CustomMemberDetails implements UserDetails {
+public record CustomMemberDetails(
+        String memberId,
+        String email,
+        String password,
+        Collection<? extends GrantedAuthority> authorities) implements UserDetails {
 
-    private final Member member;
-
-    public String getMemberId() {
-        return member.getId();
+    public CustomMemberDetails(Member member) {
+        this(member.getId(), member.getEmail(), member.getPassword(), Collections.emptyList());
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return authorities;
     }
 
     @Override
     public String getPassword() {
-        return member.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return member.getEmail();
+        return email;
     }
 
     @Override

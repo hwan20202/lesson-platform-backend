@@ -1,10 +1,10 @@
 package com.kosa.fillinv.global.security.filter;
 
-import com.kosa.fillinv.global.security.jwt.JWTUtil;
-import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosa.fillinv.global.response.ErrorCode;
 import com.kosa.fillinv.global.response.ErrorResponse;
+import com.kosa.fillinv.global.security.details.CustomMemberDetails;
+import com.kosa.fillinv.global.security.jwt.JWTUtil;
 import com.kosa.fillinv.member.dto.security.LoginRequest;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,19 +51,26 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-            Authentication authResult) {
+                                            Authentication authResult) throws IOException {
         CustomMemberDetails customMemberDetails = (CustomMemberDetails) authResult.getPrincipal();
         String email = customMemberDetails.getUsername();
-        String memberId = customMemberDetails.getMemberId();
+        String memberId = customMemberDetails.memberId();
 
         String token = jwtUtil.createJwt(email, memberId, jwtExpirationTime);
 
-        response.addHeader("Authorization", "Bearer " + token);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        result.put("accessToken", "Bearer " + token);
+
+        objectMapper.writeValue(response.getWriter(), result);
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException failed) throws IOException {
+                                              AuthenticationException failed) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

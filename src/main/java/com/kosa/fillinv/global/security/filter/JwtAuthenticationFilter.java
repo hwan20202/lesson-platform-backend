@@ -1,11 +1,10 @@
 package com.kosa.fillinv.global.security.filter;
 
-import com.kosa.fillinv.global.security.jwt.JWTUtil;
-import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosa.fillinv.global.response.ErrorCode;
 import com.kosa.fillinv.global.response.ErrorResponse;
-import com.kosa.fillinv.member.entity.Member;
+import com.kosa.fillinv.global.security.details.CustomMemberDetails;
+import com.kosa.fillinv.global.security.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,13 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtUtil.getEmail(token);
             String memberId = jwtUtil.getMemberId(token);
 
-            Member member = Member.builder()
-                    .id(memberId)
-                    .email(email)
-                    .password("N/A")
-                    .build();
+            CustomMemberDetails customMemberDetails = new CustomMemberDetails(memberId, email, "N/A",
+                    java.util.Collections.emptyList());
 
-            CustomMemberDetails customMemberDetails = new CustomMemberDetails(member);
             Authentication authToken = new UsernamePasswordAuthenticationToken(customMemberDetails, null,
                     customMemberDetails.getAuthorities());
 
