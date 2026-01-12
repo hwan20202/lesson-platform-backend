@@ -36,12 +36,14 @@ public record LessonDetailResult(
 
     public record Lesson(
             String lessonId,
-            String description
+            String description,
+            String lessonType
     ) {
         public static Lesson of(LessonDTO lessonDTO) {
             return new Lesson(
                     lessonDTO.id(),
-                    lessonDTO.description()
+                    lessonDTO.description(),
+                    lessonDTO.lessonType().name()
             );
         }
     }
