@@ -5,12 +5,14 @@ import com.kosa.fillinv.category.entity.Category;
 import com.kosa.fillinv.category.exception.CategoryException;
 import com.kosa.fillinv.category.repository.CategoryRepository;
 import com.kosa.fillinv.global.response.ErrorCode;
-import com.kosa.fillinv.member.dto.profile.IntroductionRequestDto;
-import com.kosa.fillinv.member.exception.MemberException;
-import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
+import com.kosa.fillinv.global.util.FileStorage;
+import com.kosa.fillinv.global.util.UploadFileResult;
 import com.kosa.fillinv.member.dto.member.SignUpDto;
+import com.kosa.fillinv.member.dto.profile.IntroductionRequestDto;
+import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
 import com.kosa.fillinv.member.entity.Member;
 import com.kosa.fillinv.member.entity.Profile;
+import com.kosa.fillinv.member.exception.MemberException;
 import com.kosa.fillinv.member.repository.MemberRepository;
 import com.kosa.fillinv.member.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -30,6 +33,7 @@ public class MemberService {
     private final ProfileRepository profileRepository;
     private final CategoryRepository categoryRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final FileStorage fileStorage;
 
     @Transactional
     public void signUp(SignUpDto signUpDto) {
@@ -65,16 +69,34 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateProfileImage(String memberId, String file) {
+    public void updateProfileImage(String memberId, MultipartFile file) {
         if (!memberRepository.existsById(memberId)) {
             throw new MemberException.MemberNotFound();
         }
         Profile profile = profileRepository.findById(memberId)
                 .orElseThrow(MemberException.ProfileNotFound::new);
 
-        // TODO: 이미지 저장 로직 구현 예정
-        String imageUrl = file;
-        profile.updateImage(imageUrl);
+        if (profile.getImage() != null) {
+            fileStorage.delete(profile.getImage());
+        }
+
+        UploadFileResult result = fileStorage.upload(file);
+        profile.updateImage(result.fileKey());
+    }
+
+    @Transactional
+    public void deleteProfileImage(String memberId) {
+        if (!memberRepository.existsById(memberId)) {
+            throw new MemberException.MemberNotFound();
+        }
+        Profile profile = profileRepository.findById(memberId)
+                .orElseThrow(MemberException.ProfileNotFound::new);
+
+        if (profile.getImage() != null) {
+            fileStorage.delete(profile.getImage());
+        }
+
+        profile.updateImage(null);
     }
 
     @Transactional

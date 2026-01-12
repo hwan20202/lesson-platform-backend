@@ -3,7 +3,6 @@ package com.kosa.fillinv.member.controller;
 import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.member.dto.profile.IntroductionRequestDto;
 import com.kosa.fillinv.member.dto.profile.NicknameRequestDto;
-import com.kosa.fillinv.member.dto.profile.ProfileImageRequestDto;
 import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
 import com.kosa.fillinv.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +10,7 @@ import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/profile")
@@ -26,8 +26,14 @@ public class ProfileController {
 
     @PatchMapping("/me/image")
     public SuccessResponse<Void> updateProfileImage(@AuthenticationPrincipal CustomMemberDetails userDetails,
-            @RequestBody ProfileImageRequestDto requestDto) {
-        memberService.updateProfileImage(userDetails.memberId(), requestDto.image());
+            @RequestPart("image") MultipartFile image) {
+        memberService.updateProfileImage(userDetails.memberId(), image);
+        return SuccessResponse.success(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/me/image")
+    public SuccessResponse<Void> deleteProfileImage(@AuthenticationPrincipal CustomMemberDetails userDetails) {
+        memberService.deleteProfileImage(userDetails.memberId());
         return SuccessResponse.success(HttpStatus.OK);
     }
 
