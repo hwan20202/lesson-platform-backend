@@ -2,6 +2,7 @@ package com.kosa.fillinv.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,10 +21,12 @@ public class SecurityConfig {
                 // 요청 주소별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/v1/lessons/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
-                                "/swagger-ui/**"
-                        ).permitAll()
+                                "/swagger-ui/**",
+                                "/api/v1/lessons/*/reviews")
+                        .permitAll()
 
                         // 그 외 모든 요청 인증 필요
                         .anyRequest().authenticated()

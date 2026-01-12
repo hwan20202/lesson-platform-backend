@@ -1,13 +1,10 @@
 package com.kosa.fillinv.schedule.dto.request;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.Instant;
 
 public record ScheduleCreateRequest( // 스케쥴 생성 (요청)
-                                     LocalDate date,
-                                     LocalTime startTime,
-                                     LocalTime endTime,
-                                     String requestContent
+                                     String optionId, // Option에서 minutes 가져옴
+                                     Instant startTime // 표준 시간 적용 - option 의 minutes 더해서 endTime 계산
 ) {
 }
 
