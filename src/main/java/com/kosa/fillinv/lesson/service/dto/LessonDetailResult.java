@@ -37,13 +37,19 @@ public record LessonDetailResult(
     public record Lesson(
             String lessonId,
             String description,
-            String lessonType
+            String lessonType,
+            String title,
+            String thumbnailImage,
+            Integer price
     ) {
         public static Lesson of(LessonDTO lessonDTO) {
             return new Lesson(
                     lessonDTO.id(),
                     lessonDTO.description(),
-                    lessonDTO.lessonType().name()
+                    lessonDTO.lessonType().name(),
+                    lessonDTO.title(),
+                    lessonDTO.thumbnailImage(),
+                    lessonDTO.price()
             );
         }
     }
