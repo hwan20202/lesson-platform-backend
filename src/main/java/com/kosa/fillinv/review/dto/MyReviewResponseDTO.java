@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -16,17 +17,23 @@ public class MyReviewResponseDTO {
     private String scheduleId;
     private String lessonName;
     private Instant createdAt;
+    private String optionName;
+    private LocalDate reservationDate;
+    private String mentorNickname;
 
-    public static MyReviewResponseDTO from(ReviewWithScheduleLessonNameVO vo) {
-        Review r = vo.getReview();
+    public static MyReviewResponseDTO from(MyReviewVO vo) {
+        Review r = vo.review();
         return MyReviewResponseDTO.builder()
                 .reviewId(r.getId())
                 .score(r.getScore())
                 .content(r.getContent())
                 .lessonId(r.getLessonId())
                 .scheduleId(r.getScheduleId())
-                .lessonName(vo.getLessonName())
+                .lessonName(vo.lessonName())
                 .createdAt(r.getCreatedAt())
+                .optionName(vo.optionName())
+                .reservationDate(vo.reservationDate())
+                .mentorNickname(vo.mentorNickname())
                 .build();
     }
 }

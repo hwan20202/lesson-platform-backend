@@ -1,8 +1,8 @@
 package com.kosa.fillinv.review.repository;
 
 import com.kosa.fillinv.review.dto.LessonAvgScore;
+import com.kosa.fillinv.review.dto.MyReviewVO;
 import com.kosa.fillinv.review.dto.ReviewWithNicknameVO;
-import com.kosa.fillinv.review.dto.ReviewWithScheduleLessonNameVO;
 import com.kosa.fillinv.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +30,12 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
             "WHERE r.lessonId = :lessonId")
     Page<ReviewWithNicknameVO> findReviewsWithNicknameByLessonId(@Param("lessonId") String lessonId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"schedule"})
-    @Query("SELECT new com.kosa.fillinv.review.dto.ReviewWithScheduleLessonNameVO(r, r.schedule.lessonCategoryName) " +
+    @Query("SELECT new com.kosa.fillinv.review.dto.MyReviewVO(" +
+            "r, s.lessonCategoryName, s.optionName, s.date, m.nickname) " +
             "FROM Review r " +
+            "JOIN r.schedule s " +
+            "JOIN Lesson l ON s.lessonId = l.id " +
+            "JOIN Member m ON l.mentorId = m.id " +
             "WHERE r.writerId = :writerId")
-    Page<ReviewWithScheduleLessonNameVO> findByWriterId(@Param("writerId") String writerId, Pageable pageable);
+    Page<MyReviewVO> findByWriterId(@Param("writerId") String writerId, Pageable pageable);
 }
