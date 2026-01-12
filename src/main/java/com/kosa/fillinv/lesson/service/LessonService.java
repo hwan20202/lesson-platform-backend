@@ -56,13 +56,12 @@ public class LessonService {
     }
 
     public Optional<LessonDTO> readLessonById(String id) {
-        Lesson lesson = findActiveLesson(id).orElseThrow(() ->
-                new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(id)));
-
-        List<AvailableTime> availableTimes = findAllActiveAvailableTime(id);
-        List<Option> options = findAllActiveOption(id);
-
-        return Optional.of(LessonDTO.of(lesson, availableTimes, options));
+        return findActiveLesson(id)
+                .map(lesson -> {
+                    List<AvailableTime> availableTimes = findAllActiveAvailableTime(lesson.getId());
+                    List<Option> options = findAllActiveOption(lesson.getId());
+                    return LessonDTO.of(lesson, availableTimes, options);
+                });
     }
 
     public List<LessonDTO> readLessonAll() {
