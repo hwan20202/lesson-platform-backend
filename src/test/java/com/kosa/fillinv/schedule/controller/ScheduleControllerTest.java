@@ -1,5 +1,6 @@
 package com.kosa.fillinv.schedule.controller;
 
+import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.LessonType;
 import com.kosa.fillinv.lesson.entity.Option;
@@ -47,14 +48,22 @@ class ScheduleControllerTest {
                 .lesson(mockLesson)
                 .build();
 
+        AvailableTime mockAvailableTime = AvailableTime.builder()
+                .id("time_01")
+                .startTime(startTime)
+                .endTime(startTime.plus(80, ChronoUnit.MINUTES))
+                .price(25000)
+                .build();
+
         ScheduleCreateRequest request = new ScheduleCreateRequest(
                 "lesson01",
                 "option01",
+                "time_01",
                 startTime
         );
 
         // when - Schedule.create 메서드 호출 / Option 객체와 시작 시간을 넘겨줌
-        Schedule schedule = Schedule.create(mockLesson, mockOption, request.startTime(), memberId);
+        Schedule schedule = Schedule.create(mockLesson, mockOption, mockAvailableTime, request.startTime(), memberId);
 
         // then
         assertNotNull(schedule);

@@ -2,8 +2,10 @@ package com.kosa.fillinv.schedule.service;
 
 import com.kosa.fillinv.global.exception.BusinessException;
 import com.kosa.fillinv.global.response.ErrorCode;
+import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.Option;
+import com.kosa.fillinv.lesson.repository.AvailableTimeRepository;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.repository.OptionRepository;
 import com.kosa.fillinv.schedule.dto.request.ScheduleCreateRequest;
@@ -21,20 +23,25 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final LessonRepository lessonRepository;
     private final OptionRepository optionRepository;
+    private final AvailableTimeRepository availableTimeRepository;
 
     // 스케쥴 생성
     @Transactional
-    public String createSchedule(String memberId, ScheduleCreateRequest request, String lessonId) {
+    public String createSchedule(String memberId, ScheduleCreateRequest request) {
         // 레슨 조회
-        Lesson lesson = lessonRepository.findById(lessonId)
+        Lesson lesson = lessonRepository.findById(request.lessonId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.LESSON_NOT_FOUND));
 
         // 옵션 조회
         Option option = optionRepository.findById(request.optionId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.OPTION_NOT_FOUND));
 
+        // 가능한 시간대 조회
+        AvailableTime availableTime = availableTimeRepository.findById(request.availableTimeId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.AVAILABLE_TIME_NOT_FOUND));
+
         // Factory Method를 통한 스케쥴 생성
-        Schedule schedule = Schedule.create(lesson, option, request.startTime(), memberId);
+        Schedule schedule = Schedule.create(lesson, option, availableTime, request.startTime(), memberId);
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 

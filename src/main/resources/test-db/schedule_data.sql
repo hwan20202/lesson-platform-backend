@@ -1,6 +1,7 @@
 INSERT INTO schedules (schedule_id,
                        lesson_id,
-                       date,
+                       option_id,
+                       available_time_id,
                        start_time,
                        end_time,
                        status,
@@ -19,11 +20,13 @@ INSERT INTO schedules (schedule_id,
                        price,
                        created_at,
                        updated_at)
-VALUES ('SCH-20260112-001',
-        '1',
-        '2026-02-01',
-        '10:00:00', -- (날짜 제외) 시간
-        '11:20:00',
+
+VALUES ('2',
+        'L1',
+        'OPT-001',
+        'AT-001',
+        '2026-02-01 10:00:00',
+        '2026-02-01 11:20:00',
         'APPROVED',
 
            -- 레슨 정보 스냅샷

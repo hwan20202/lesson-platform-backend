@@ -1,12 +1,13 @@
 package com.kosa.fillinv.schedule.entity;
 
+import com.kosa.fillinv.global.entity.BaseEntity;
+import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
 import com.kosa.fillinv.lesson.entity.Option;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Schedule {
+public class Schedule extends BaseEntity {
 
     @Id
     @Column(name = "schedule_id", nullable = false)
@@ -67,15 +68,6 @@ public class Schedule {
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
     @Column(name = "lesson_id")
     private String lessonId;
 
@@ -85,11 +77,20 @@ public class Schedule {
     @Column(name = "option_id")
     private String optionId;
 
+    /* ===== AvailableTime ===== */
+    @ManyToOne(fetch = FetchType.LAZY) // 하나의 시간대에 여러 개의 스케쥴이 생길 수 있음
+    @JoinColumn(name = "available_time_id")
+    private AvailableTime availableTime;
+
     // 스케쥴 생성 메서드
-    public static Schedule create(Lesson lesson, Option option, Instant startTime, String menteeId) {
+    public static Schedule create(Lesson lesson, Option option, AvailableTime availableTime, Instant startTime, String menteeId) {
+        Schedule schedule = new Schedule();
 
         // 시작 시간 + 옵션 분(minutes) =  종료 시간
         Instant endTime = startTime.plus(option.getMinute(), ChronoUnit.MINUTES);
+
+        // 장소가 null인 경우 "장소 미정"으로 설정
+        schedule.lessonLocation = (lesson.getLocation() != null) ? lesson.getLocation() : "장소 미정";
 
         return Schedule.builder() // 빌더 코드 숨김
                 .id(UUID.randomUUID().toString()) // UUID 적용
@@ -109,6 +110,8 @@ public class Schedule {
                 .optionName(option.getName())
                 .optionMinute(option.getMinute())
                 .price(option.getPrice())
+
+                .availableTime(availableTime) // AvailableTime 엔티티와 연관 설정
 
                 // 시간 정보 - 한국 표준시 적용
                 .startTime(startTime)
