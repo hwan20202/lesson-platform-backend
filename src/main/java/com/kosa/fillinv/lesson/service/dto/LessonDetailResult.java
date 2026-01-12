@@ -8,12 +8,14 @@ import java.util.List;
 public record LessonDetailResult(
         Mentor mentor,
         Lesson lesson,
+        List<Option> options,
         List<AvailableTime> availableTimes
 ) {
     public static LessonDetailResult of(MentorSummaryDTO mentorSummaryDTO, LessonDTO lessonDTO) {
         return new LessonDetailResult(
                 Mentor.of(mentorSummaryDTO),
                 Lesson.of(lessonDTO),
+                lessonDTO.optionDTOList().stream().map(Option::of).toList(),
                 lessonDTO.availableTimeDTOList().stream().map(AvailableTime::of).toList()
         );
     }
@@ -50,6 +52,23 @@ public record LessonDetailResult(
                     lessonDTO.title(),
                     lessonDTO.thumbnailImage(),
                     lessonDTO.price()
+            );
+        }
+    }
+
+    public record Option(
+            String optionId,
+            String name,
+            Integer minute,
+            Integer price
+    ) {
+
+        public static Option of(OptionDTO optionDTOS) {
+            return new Option(
+                    optionDTOS.id(),
+                    optionDTOS.name(),
+                    optionDTOS.minute(),
+                    optionDTOS.price()
             );
         }
     }
