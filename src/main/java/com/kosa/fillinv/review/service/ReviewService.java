@@ -3,6 +3,7 @@ package com.kosa.fillinv.review.service;
 import com.kosa.fillinv.review.dto.LessonAvgScore;
 import com.kosa.fillinv.review.dto.LessonReviewListResponseDTO;
 import com.kosa.fillinv.review.dto.LessonReviewResponseDTO;
+import com.kosa.fillinv.review.dto.MyReviewResponseDTO;
 import com.kosa.fillinv.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,12 @@ public class ReviewService {
                 .map(LessonReviewResponseDTO::from);
 
         return LessonReviewListResponseDTO.of(averageScore, reviews.getTotalElements(), reviews);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MyReviewResponseDTO> getMyReviews(String memberId, Pageable pageable) {
+        return reviewRepository.findByWriterId(memberId, pageable)
+                .map(MyReviewResponseDTO::from);
     }
 
     @Transactional(readOnly = true)

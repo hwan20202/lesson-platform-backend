@@ -1,6 +1,7 @@
 package com.kosa.fillinv.review.repository;
 
 import com.kosa.fillinv.review.dto.LessonAvgScore;
+import com.kosa.fillinv.review.dto.MyReviewVO;
 import com.kosa.fillinv.review.dto.ReviewWithNicknameVO;
 import com.kosa.fillinv.review.entity.Review;
 import org.springframework.data.domain.Page;
@@ -28,4 +29,13 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
             "FROM Review r " +
             "WHERE r.lessonId = :lessonId")
     Page<ReviewWithNicknameVO> findReviewsWithNicknameByLessonId(@Param("lessonId") String lessonId, Pageable pageable);
+
+    @Query("SELECT new com.kosa.fillinv.review.dto.MyReviewVO(" +
+            "r, s.lessonCategoryName, s.optionName, s.date, m.nickname) " +
+            "FROM Review r " +
+            "JOIN r.schedule s " +
+            "JOIN Lesson l ON s.lessonId = l.id " +
+            "JOIN Member m ON l.mentorId = m.id " +
+            "WHERE r.writerId = :writerId")
+    Page<MyReviewVO> findByWriterId(@Param("writerId") String writerId, Pageable pageable);
 }
