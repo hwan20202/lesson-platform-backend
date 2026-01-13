@@ -20,15 +20,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 
     // 상태 일치 스케쥴 찾기
     Page<Schedule> findByStatus(ScheduleStatus status, Pageable pageable);
-    @Query("SELECT new com.kosa.fillinv.review.dto.UnwrittenReviewVO(s.id, s.lessonTitle, s.lessonId, s.optionName, s.date, m.nickname) " +
+    @Query("SELECT new com.kosa.fillinv.review.dto.UnwrittenReviewVO(s.id, s.lessonTitle, s.lessonId, s.optionName, s.createdAt, m.nickname) " +
             "FROM Schedule s " +
             "JOIN Lesson l ON s.lessonId = l.id " +
             "JOIN Member m ON l.mentorId = m.id " +
-            "WHERE s.mentee = :menteeId " +
+            "WHERE s.menteeId = :menteeId " +
             "AND s.status = com.kosa.fillinv.schedule.entity.ScheduleStatus.COMPLETED " +
             "AND NOT EXISTS (SELECT r FROM Review r WHERE r.scheduleId = s.id)")
     Page<UnwrittenReviewVO> findUnwrittenReviews(@Param("menteeId") String menteeId, Pageable pageable);
-}
 
     // 멘티 스케쥴 조회
     Page<Schedule> findByMenteeId(String memberId, Pageable pageable);
