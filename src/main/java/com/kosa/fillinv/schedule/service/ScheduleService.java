@@ -18,6 +18,7 @@ import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
 import com.kosa.fillinv.schedule.entity.ScheduleTime;
 import com.kosa.fillinv.schedule.repository.ScheduleRepository;
+import com.kosa.fillinv.schedule.repository.ScheduleTimeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class ScheduleService {
     private final AvailableTimeRepository availableTimeRepository;
     private final CategoryRepository categoryRepository;
     private final MemberRepository memberRepository;
+    private final ScheduleTimeRepository scheduleTimeRepository;
 
     @Transactional
     public String createSchedule(String memberId, ScheduleCreateRequest request) {
@@ -169,23 +171,26 @@ public class ScheduleService {
     }
 
     // 스케쥴 상세 조회
-    public ScheduleDetailResponse getScheduleById(String scheduleId) {
+    public ScheduleDetailResponse getScheduleDetail(String scheduleId, String scheduleTimeId) {
         // 스케쥴 조회
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
 
+        ScheduleTime scheduleTime = scheduleTimeRepository.findById(scheduleTimeId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_TIME_NOT_FOUND));
+
         // 멘토 닉네임 조회
-        String mentorNickname = memberRepository.findById(schedule.getMentor())
+        String mentorNickname = memberRepository.findById(schedule.getMentorId())
                 .map(Member::getNickname)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 멘티 닉네임 조회
-        String menteeNickname = memberRepository.findById(schedule.getMentee())
+        String menteeNickname = memberRepository.findById(schedule.getMenteeId())
                 .map(Member::getNickname)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // entity -> dto 변환
-        return ScheduleDetailResponse.from(schedule, mentorNickname, menteeNickname);
+        return ScheduleDetailResponse.from(schedule, mentorNickname, menteeNickname, scheduleTime.getStartTime());
     }
 
     // 상태 일치 스케쥴 조회(결제 대기, 승인 대기, 승인, 취소, 완료)

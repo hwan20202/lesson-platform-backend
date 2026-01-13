@@ -19,14 +19,14 @@ public record ScheduleDetailResponse( // 스케쥴 상세 조회 (생성)
                                       ScheduleStatus status,
                                       Integer price
 ) {
-    public static ScheduleDetailResponse from(Schedule s, String mentorNickname, String menteeNickname) {
+    public static ScheduleDetailResponse from(Schedule s, String mentorNickname, String menteeNickname, Instant startTime) {
         return new ScheduleDetailResponse(
                 s.getId(),
                 s.getLessonTitle(),
                 s.getLessonCategoryName(),
                 mentorNickname,
                 menteeNickname,
-                s.getStartTime(),
+                startTime,
                 s.getLessonLocation(),
                 s.getLessonDescription(),
                 s.getLessonType(),

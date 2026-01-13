@@ -43,11 +43,12 @@ public class ScheduleController {
     }
 
     // 스케쥴 상세 조회
-    @GetMapping("/{id}")
+    @GetMapping("/{scheduleId}/{scheduleTimeId}")
     public ResponseEntity<SuccessResponse<ScheduleDetailResponse>> getScheduleDetails(
-            @PathVariable("id") String scheduleId
+            @PathVariable String scheduleId,
+            @PathVariable String scheduleTimeId
     ) {
-        ScheduleDetailResponse response = scheduleService.getScheduleById(scheduleId);
+        ScheduleDetailResponse response = scheduleService.getScheduleDetail(scheduleId, scheduleTimeId);
 
         return ResponseEntity
                 .ok(SuccessResponse.success(HttpStatus.OK, response));
