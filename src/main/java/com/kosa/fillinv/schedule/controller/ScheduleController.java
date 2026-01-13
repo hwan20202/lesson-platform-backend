@@ -27,7 +27,7 @@ public class ScheduleController {
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
             @RequestBody ScheduleCreateRequest request
     ) {
-        String memberId = customMemberDetails.getUsername();
+        String memberId = customMemberDetails.memberId();
 
         String scheduleId = scheduleService.createSchedule(memberId, request);
 
