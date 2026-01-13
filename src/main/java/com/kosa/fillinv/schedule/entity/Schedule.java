@@ -47,13 +47,13 @@ public class Schedule extends BaseEntity {
 
     /* ===== Option Snapshot ===== */
     // 옵션 하나 당 없거나 한 개 또는 여러 개의 스케쥴 존재
-    @Column(name = "option_name", nullable = false)
+    @Column(name = "option_name")
     private String optionName;
 
-    @Column(name = "option_minute", nullable = false)
+    @Column(name = "option_minute")
     private Integer optionMinute;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price")
     private Integer price;
 
     /* 외부 테이블 키 */
