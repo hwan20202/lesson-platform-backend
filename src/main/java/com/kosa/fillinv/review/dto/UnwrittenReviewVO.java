@@ -1,12 +1,12 @@
 package com.kosa.fillinv.review.dto;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 public record UnwrittenReviewVO(
         String scheduleId,
         String lessonName,
         String lessonId,
         String optionName,
-        LocalDate reservationDate,
+        Instant reservationDate,
         String mentorNickname) {
 }

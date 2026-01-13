@@ -1,5 +1,8 @@
 package com.kosa.fillinv.schedule.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum ScheduleStatus {
     PAYMENT_PENDING("결제 대기"),
     APPROVAL_PENDING("승인 대기"),

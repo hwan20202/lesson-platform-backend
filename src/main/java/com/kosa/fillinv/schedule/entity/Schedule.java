@@ -1,29 +1,24 @@
 package com.kosa.fillinv.schedule.entity;
 
+import com.kosa.fillinv.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "schedules")
-public class Schedule {
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Schedule extends BaseEntity {
 
     @Id
     @Column(name = "schedule_id", nullable = false)
-    @Getter
     private String id;
-
-    @Column(name = "date", nullable = false)
-    private LocalDate date;
-
-    @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
-
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -34,7 +29,6 @@ public class Schedule {
 
     /* ===== Lesson Snapshot ===== */
     @Column(name = "lesson_title", nullable = false)
-    @Getter
     private String lessonTitle;
 
     @Column(name = "lesson_type", nullable = false)
@@ -49,31 +43,48 @@ public class Schedule {
     @Column(name = "lesson_category_name", nullable = false)
     private String lessonCategoryName;
 
+    @Column(name = "mentor_nickname", nullable = false)
+    private String mentorNickname;
+
     /* ===== Option Snapshot ===== */
-    @Column(name = "option_name", nullable = false)
+    /* 옵션은 MENTORING 레슨만 사용 */
+    @Column(name = "option_name")
     private String optionName;
 
-    @Column(name = "option_minute", nullable = false)
+    @Column(name = "option_minute")
     private Integer optionMinute;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price")
     private Integer price;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "lesson_id")
+    /* 외부 테이블 키 */
+    @Column(name = "lesson_id", nullable = false)
     private String lessonId;
 
-    @Column(name = "mentee_id")
-    private String mentee;
+    @Column(name = "mentee_id", nullable = false)
+    private String menteeId;
 
+    @Column(name = "lesson_mentor_id", nullable = false)
+    private String mentorId;
+
+    // MENTORING 레슨에서 사용
     @Column(name = "option_id")
     private String optionId;
+
+    // ONEDAY 레슨에서 사용
+    @Column(name = "available_time_id")
+    private String availableTimeId;
+
+    // STUDY 레슨은 여러 scheduleTime을 가질 수 있기 때문에 List 사용
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    private List<ScheduleTime> scheduleTimeList = new ArrayList<>();
+
+    public void addScheduleTime(ScheduleTime scheduleTime) {
+        scheduleTime.setSchedule(this);
+        this.scheduleTimeList.add(scheduleTime);
+    }
+
+    public void addScheduleTime(List<ScheduleTime> scheduleTimeList) {
+        scheduleTimeList.forEach(this::addScheduleTime);
+    }
 }

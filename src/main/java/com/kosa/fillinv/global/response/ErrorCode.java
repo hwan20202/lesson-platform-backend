@@ -33,7 +33,13 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "S02", "유효하지 않은 토큰입니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "S03", "인증되지 않은 사용자입니다."),
     ACCESS_DENIED(FORBIDDEN, "S04", "접근 권한이 없습니다."),
-    ;
+
+    // Schedule Error
+    LESSON_NOT_FOUND(NOT_FOUND, "SCH01", "해당 레슨을 찾을 수 없습니다."),
+    OPTION_NOT_FOUND(NOT_FOUND, "SCH02", "해당 옵션을 찾을 수 없습니다."),
+    AVAILABLE_TIME_NOT_FOUND(NOT_FOUND, "SCH03", "선택한 시간대 정보를 찾을 수 없습니다"),
+    INVALID_LESSON_TYPE(NOT_FOUND, "SCH04", "레슨 유형이 올바르지 않습니다."),
+    MENTOR_NOT_FOUND(NOT_FOUND, "SCH05", "해당 멘토를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

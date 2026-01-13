@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -18,7 +17,7 @@ public class MyReviewResponseDTO {
     private String lessonName;
     private Instant createdAt;
     private String optionName;
-    private LocalDate reservationDate;
+    private Instant reservationDate;
     private String mentorNickname;
 
     public static MyReviewResponseDTO from(MyReviewVO vo) {

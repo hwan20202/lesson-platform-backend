@@ -3,7 +3,7 @@ package com.kosa.fillinv.review.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Getter
 @Builder
@@ -12,7 +12,7 @@ public class UnwrittenReviewResponseDTO {
     private String lessonName;
     private String lessonId;
     private String optionName;
-    private LocalDate reservationDate;
+    private Instant reservationDate;
     private String mentorNickname;
 
     public static UnwrittenReviewResponseDTO from(UnwrittenReviewVO vo) {
