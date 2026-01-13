@@ -1,6 +1,7 @@
 package com.kosa.fillinv.schedule.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ public class Schedule {
 
     @Id
     @Column(name = "schedule_id", nullable = false)
+    @Getter
     private String id;
 
     @Column(name = "date", nullable = false)
@@ -32,6 +34,7 @@ public class Schedule {
 
     /* ===== Lesson Snapshot ===== */
     @Column(name = "lesson_title", nullable = false)
+    @Getter
     private String lessonTitle;
 
     @Column(name = "lesson_type", nullable = false)
