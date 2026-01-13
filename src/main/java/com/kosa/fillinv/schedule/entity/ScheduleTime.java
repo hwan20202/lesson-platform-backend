@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "schedule_times")
@@ -29,4 +30,13 @@ public class ScheduleTime {
     @Setter
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
+
+    @PrePersist
+    protected void onCreate() {
+        this.id = id == null ? java.util.UUID.randomUUID().toString() : id;
+    }
+
+    public static ScheduleTime of(Instant startTime, Instant endTime, Schedule schedule) {
+        return new ScheduleTime(null, startTime, endTime, schedule);
+    }
 }

@@ -72,9 +72,8 @@ public class Schedule extends BaseEntity {
     @Column(name = "available_time_id")
     private String availableTimeId;
 
-
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
-    private List<ScheduleTime> scheduleTimeList = new ArrayList<>();
+    private List<ScheduleTime> scheduleTimeList;
 
     public void addScheduleTime(ScheduleTime scheduleTime) {
         scheduleTime.setSchedule(this);

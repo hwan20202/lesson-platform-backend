@@ -17,8 +17,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
     Page<Schedule> findByStatus(ScheduleStatus status, Pageable pageable);
 
     // 멘티 스케쥴 조회
-    Page<Schedule> findByMentee(String memberId, Pageable pageable);
+    Page<Schedule> findByMenteeId(String memberId, Pageable pageable);
 
     // 멘토 스케쥴 조회
-    Page<Schedule> findByMentor(String memberId, Pageable pageable);
+    Page<Schedule> findByMentorId(String memberId, Pageable pageable);
 }
