@@ -8,7 +8,10 @@ import com.kosa.fillinv.lesson.entity.Option;
 import com.kosa.fillinv.lesson.repository.AvailableTimeRepository;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.repository.OptionRepository;
+import com.kosa.fillinv.member.entity.Member;
+import com.kosa.fillinv.member.repository.MemberRepository;
 import com.kosa.fillinv.schedule.dto.request.ScheduleCreateRequest;
+import com.kosa.fillinv.schedule.dto.response.ScheduleDetailResponse;
 import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class ScheduleService {
     private final LessonRepository lessonRepository;
     private final OptionRepository optionRepository;
     private final AvailableTimeRepository availableTimeRepository;
+    private final MemberRepository memberRepository;
 
     // 스케쥴 생성
     @Transactional
@@ -49,7 +53,24 @@ public class ScheduleService {
     }
 
     // 스케쥴 상세 조회
-    // 제목, 상태, 페이지, 오늘 기준(true일 경우 오늘 이후 스케쥴), 오름차순
+    public ScheduleDetailResponse getScheduleById(String scheduleId) {
+        // 스케쥴 조회
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 멘토 닉네임 조회
+        String mentorNickname = memberRepository.findById(schedule.getMentor())
+                .map(Member::getNickname)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 멘티 닉네임 조회
+        String menteeNickname = memberRepository.findById(schedule.getMentee())
+                .map(Member::getNickname)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // entity -> dto 변환
+        return ScheduleDetailResponse.from(schedule, mentorNickname, menteeNickname);
+    }
 
     // 상태 일치 스케쥴 조회(결제 대기, 승인 대기, 승인, 취소, 완료)
 

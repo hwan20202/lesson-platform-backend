@@ -2,14 +2,13 @@ package com.kosa.fillinv.schedule.controller;
 
 import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.schedule.dto.request.ScheduleCreateRequest;
+import com.kosa.fillinv.schedule.dto.response.ScheduleDetailResponse;
 import com.kosa.fillinv.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
@@ -25,6 +24,11 @@ public class ScheduleController {
             @AuthenticationPrincipal String memberId, // 로그인한 사용자 ID
             @RequestBody ScheduleCreateRequest request, String lessonId
     ) {
+        // 테스트용 memberId - DB의 member 테이블에 실제로 존재하는 ID를 넣으세요
+        if (memberId == null) {
+            memberId = "1";
+        }
+
         String scheduleId = scheduleService.createSchedule(memberId, request);
 
         // 요청 주소 - ServletUriComponentsBuilder 사용 시 서버 주소가 바뀌더라도 코드를 수정하지 않아도 됨
@@ -42,10 +46,15 @@ public class ScheduleController {
     }
 
     // 스케쥴 상세 조회
-//    @GetMapping("/{id}")
-//    public String getScheduleDetails() {
-//        return "";
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<SuccessResponse<ScheduleDetailResponse>> getScheduleDetails(
+            @PathVariable("id") String scheduleId
+    ) {
+        ScheduleDetailResponse response = scheduleService.getScheduleById(scheduleId);
+
+        return ResponseEntity
+                .ok(SuccessResponse.success(HttpStatus.OK, response));
+    }
 
     // 상태 일치 스케쥴 조회
 //    @GetMapping("/{id}/status")
