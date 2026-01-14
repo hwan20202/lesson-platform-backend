@@ -83,12 +83,11 @@ public class MemberService {
         Map<Long, Category> categoryMap = categoryRepository.findAll().stream()
                 .collect(Collectors.toMap(Category::getId, category -> category));
 
-        return memberMap.keySet().stream()
+        return memberMap.values().stream()
                 .collect(Collectors.toMap(
-                        memberId -> memberId,
-                        memberId -> {
-                            Member member = memberMap.get(memberId);
-                            Profile profile = profileMap.get(memberId);
+                        Member::getId,
+                        member -> {
+                            Profile profile = profileMap.get(member.getId());
 
                             Category category = null;
                             if (profile != null && profile.getCategoryId() != null) {
