@@ -39,10 +39,10 @@ public class Review extends BaseEntity {
     private String lessonId;
 
     @Getter
-    @Column(name = "schedule_id", nullable = false)
+    @Column(name = "schedule_id", nullable = false, unique = true)
     private String scheduleId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", insertable = false, updatable = false)
     private Schedule schedule;
 }
