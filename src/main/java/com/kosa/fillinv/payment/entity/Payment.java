@@ -76,19 +76,19 @@ public class Payment extends BaseEntity {
     }
 
     public void markExecuting() {
-        if (paymentStatus == PaymentStatus.NOT_STARTED) {
+        if (paymentStatus == PaymentStatus.NOT_STARTED || paymentStatus == PaymentStatus.UNKNOWN) {
             paymentStatus = PaymentStatus.EXECUTING;
         }
     }
 
     public void markSuccess() {
-        if (paymentStatus == PaymentStatus.EXECUTING) {
+        if (paymentStatus == PaymentStatus.EXECUTING || paymentStatus == PaymentStatus.UNKNOWN) {
             paymentStatus = PaymentStatus.SUCCESS;
         }
     }
 
     public void markFail() {
-        if (paymentStatus == PaymentStatus.NOT_STARTED || paymentStatus == PaymentStatus.EXECUTING) {
+        if (paymentStatus == PaymentStatus.NOT_STARTED || paymentStatus == PaymentStatus.EXECUTING || paymentStatus == PaymentStatus.UNKNOWN) {
             paymentStatus = PaymentStatus.FAILURE;
         }
     }
@@ -96,5 +96,11 @@ public class Payment extends BaseEntity {
     // 실제 운영 시에는 전체 raw 데이터를 저장 필수. 테스트를 위해서 길이 제한
     public void setPspRaw(String pspRaw) {
         this.pspRaw = pspRaw.substring(0, Math.min(pspRaw.length(), 50));
+    }
+
+    public void markUnknown() {
+        if (paymentStatus == PaymentStatus.NOT_STARTED || paymentStatus == PaymentStatus.EXECUTING) {
+            paymentStatus = PaymentStatus.UNKNOWN;
+        }
     }
 }

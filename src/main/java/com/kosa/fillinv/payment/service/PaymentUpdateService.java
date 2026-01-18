@@ -61,7 +61,7 @@ public class PaymentUpdateService {
         Payment payment = paymentRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new ResourceException.NotFound("결제 정보 없음"));
 
-        PaymentHistory paymentHistory = createPaymentHistory(payment, PaymentStatus.FAILURE, command.failure().toString());
+        PaymentHistory paymentHistory = createPaymentHistory(payment, PaymentStatus.FAILURE, command.failure()==null? null : command.failure().toString());
         paymentHistoryRepository.save(paymentHistory);
 
         payment.markFail();
@@ -73,7 +73,18 @@ public class PaymentUpdateService {
             case EXECUTING -> execute(command);
             case SUCCESS -> success(command);
             case FAILURE -> fail(command);
+            case UNKNOWN -> unknown(command);
             default -> throw new IllegalArgumentException("Unknown status: " + command.status());
         }
+    }
+
+    private void unknown(PaymentStatusUpdateCommand command) {
+        Payment payment = paymentRepository.findByOrderId(command.orderId())
+                .orElseThrow(() -> new ResourceException.NotFound("결제 정보 없음"));
+
+        PaymentHistory paymentHistory = createPaymentHistory(payment, PaymentStatus.UNKNOWN, command.failure()==null? null : command.failure().toString());
+        paymentHistoryRepository.save(paymentHistory);
+
+        payment.markUnknown();
     }
 }
