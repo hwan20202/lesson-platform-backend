@@ -3,6 +3,8 @@ package com.kosa.fillinv.schedule.repository;
 import com.kosa.fillinv.review.dto.UnwrittenReviewVO;
 import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +37,17 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 
     // 멘토 스케쥴 조회 (Batch Fetch Size가 N+1 문제를 알아서 최적화)
     Page<Schedule> findByMentorId(String memberId, Pageable pageable);
+
+    // 멤버(멘토 또는 멘티) 관련 스케쥴을 필터링하여 조회 (시작 시간으로 오름차순 정렬)
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE (s.mentorId = :memberId OR s.menteeId = :memberId) " + // 스케쥴의 멘토나 멘티가 로그인한 사람의 경우를 찾기
+            "AND (:date IS NULL OR s.id IN (SELECT st.schedule.id FROM ScheduleTime st WHERE DATE(st.startTime) = :date)) " + // 날짜 검색 조건이 없으면 모든 일정을 보여주고, 날짜가 지정되었다면 그날 수업이 있는 스케줄만 표시
+            "AND (:status IS NULL OR s.status = :status) " + // 상태 검색 조건이 없으면 모든 상태를 보여주고, 상태가 지정되었다면 그 상태에 맞는 스케줄만 표시
+            "ORDER BY (SELECT MIN(st2.startTime) FROM ScheduleTime st2 WHERE st2.schedule = s) ASC")
+    // 여러 회차의 수업 중 첫 번째 수업이 가장 빨리 시작하는 순서대로 나
+    List<Schedule> findAllByMemberIdWithFilter(
+            @Param("memberId") String memberId,
+            @Param("date") LocalDate date,
+            @Param("status") ScheduleStatus status
+    );
 }
