@@ -51,7 +51,6 @@ public class PaymentUpdateService {
         paymentHistoryRepository.save(paymentHistory);
         payment.markSuccess();
 
-        payment.setPaymentKey(payment.getPaymentKey());
         payment.setApprovedAt(command.extraDetails().approvedAt());
         payment.setPaymentMethod(command.extraDetails().method());
         payment.setPspRaw(command.extraDetails().pspRawData());
