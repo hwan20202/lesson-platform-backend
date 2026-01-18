@@ -23,9 +23,6 @@ public class TossRestClientConfiguration {
 
     @Bean
     public RestClient tossRestClient() {
-        System.out.println("baseUrl: " + baseUrl);
-        System.out.println("secretKey: " + secretKey);
-
         String encodedKey = Base64.getEncoder()
                 .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
 
