@@ -21,10 +21,9 @@ public class TossPaymentClient {
     private final ObjectMapper objectMapper;
 
     private final String uri = "/v1/payments/confirm";
+    private static final int MAX_RETRY_COUNT = 2;
 
     public PaymentExecutionResult confirm(PaymentConfirmCommand command) {
-
-        int maxRetry = 2;
         int attempt = 0;
 
         while (true) {
@@ -81,7 +80,7 @@ public class TossPaymentClient {
             } catch (PSPConfirmationException e) {
                 attempt++;
 
-                if (!e.isRetryable() || attempt > maxRetry) {
+                if (!e.isRetryable() || attempt > MAX_RETRY_COUNT) {
                     throw e;
                 }
 
@@ -90,7 +89,7 @@ public class TossPaymentClient {
             } catch (ResourceAccessException e) { // timeout / network
                 attempt++;
 
-                if (attempt > maxRetry) {
+                if (attempt > MAX_RETRY_COUNT) {
                     throw e;
                 }
 
