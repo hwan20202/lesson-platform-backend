@@ -9,7 +9,6 @@ import com.kosa.fillinv.schedule.dto.response.ScheduleListResponse;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
 import com.kosa.fillinv.schedule.service.ScheduleCreateService;
 import com.kosa.fillinv.schedule.service.ScheduleInquiryService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -42,7 +40,6 @@ public class ScheduleController {
             @RequestBody ScheduleCreateRequest request
     ) {
         String memberId = customMemberDetails.memberId();
-
         String scheduleId = scheduleCreateService.createSchedule(memberId, request);
 
         // 요청 주소 - ServletUriComponentsBuilder 사용 시 서버 주소가 바뀌더라도 코드를 수정하지 않아도 됨
@@ -60,14 +57,16 @@ public class ScheduleController {
 
     // 스케쥴 전체 조회 / 대시보드 - 캘린더 전체 조회 (GET) - 시간순 정렬 (D-day가 적게 남은 순으로 정렬)
     @GetMapping
-    public ResponseEntity<SuccessResponse<List<ScheduleListResponse>>> getScheduleList(
-            @RequestParam String loginMemberId, // 로그인한 사용자 식별
-            @ModelAttribute ScheduleSearchRequest filter // 필터링 조건 (date, status, title)
+    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getScheduleList(
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
+            @ModelAttribute ScheduleSearchRequest filter, // 필터링 조건 (date, status, title)
+            @ParameterObject Pageable pageable
     ) {
-        List<ScheduleListResponse> response = scheduleInquiryService.getScheduleList(loginMemberId, filter);
+        String memberId = customMemberDetails.memberId();
+        Page<ScheduleListResponse> responses = scheduleInquiryService.getScheduleList(memberId, filter, pageable);
 
         return ResponseEntity
-                .ok(SuccessResponse.success(HttpStatus.OK, response));
+                .ok(SuccessResponse.success(HttpStatus.OK, responses));
     }
 
     // 스케쥴 상세 조회
@@ -86,11 +85,11 @@ public class ScheduleController {
     // 상태 일치 스케쥴 조회
     // Ex: GET /api/v1/schedules/1/status/PAYMENT_PENDING
     @GetMapping("/{scheduleId}/status/{status}")
-    public ResponseEntity<SuccessResponse<ScheduleListResponse>> getScheduleStatus(
+    public ResponseEntity<SuccessResponse<ScheduleListResponse>> getScheduleByStatus(
             @PathVariable String scheduleId,
             @PathVariable ScheduleStatus status
     ) {
-        ScheduleListResponse response = scheduleInquiryService.getScheduleStatus(scheduleId, status);
+        ScheduleListResponse response = scheduleInquiryService.getScheduleByStatus(scheduleId, status);
 
         return ResponseEntity
                 .ok(SuccessResponse.success(HttpStatus.OK, response));
