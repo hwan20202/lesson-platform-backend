@@ -16,7 +16,6 @@ import java.util.List;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 
-    // Pageable 방식 - return type을 page로 할 경우 pagenation 처리 가능
 
     // 레슨별 스케쥴 목록 조회
     Page<Schedule> findByLessonId(String lessonId, Pageable pageable);
