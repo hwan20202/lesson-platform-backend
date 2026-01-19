@@ -1,9 +1,7 @@
 package com.kosa.fillinv.lesson.controller;
 
 import com.kosa.fillinv.global.response.SuccessResponse;
-import com.kosa.fillinv.lesson.controller.dto.PageResponse;
-import com.kosa.fillinv.lesson.controller.dto.RegisterLessonRequest;
-import com.kosa.fillinv.lesson.controller.dto.RegisterLessonResponse;
+import com.kosa.fillinv.lesson.controller.dto.*;
 import com.kosa.fillinv.lesson.service.LessonReadService;
 import com.kosa.fillinv.lesson.service.LessonRegisterService;
 import com.kosa.fillinv.lesson.service.dto.*;
@@ -55,5 +53,19 @@ public class LessonController {
         LessonDetailResult detail = lessonReadService.detail(new LessonDetailCommand(lessonId));
 
         return SuccessResponse.success(HttpStatus.OK, detail);
+    }
+
+    @PatchMapping("/{lessonId}")
+    public SuccessResponse<EditLessonResponse> edit(
+            @PathVariable String lessonId,
+            @RequestPart("request") EditLessonRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
+            @AuthenticationPrincipal UserDetails principal
+    ) {
+
+        UpdateLessonResult updateLessonResult = lessonRegisterService.editLesson(
+                lessonId, request.toCommand(), thumbnail, principal.getUsername());
+
+        return SuccessResponse.success(HttpStatus.OK, EditLessonResponse.of(updateLessonResult));
     }
 }

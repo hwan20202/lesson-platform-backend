@@ -80,8 +80,10 @@ public class LessonService {
 
 
     @Transactional
-    public UpdateLessonResult updateLesson(String lessonId, UpdateLessonCommand command) {
+    public UpdateLessonResult updateLesson(String lessonId, UpdateLessonCommand command, String ownerId) {
         Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
+
+        lesson.validateOwnership(ownerId);
 
         lesson.updateTitle(command.title());
         lesson.updateThumbnailImage(command.thumbnailImage());
