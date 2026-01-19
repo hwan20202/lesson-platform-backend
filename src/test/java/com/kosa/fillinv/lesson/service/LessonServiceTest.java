@@ -175,7 +175,7 @@ class LessonServiceTest {
 
         // when
         UpdateLessonResult updated =
-                lessonService.updateLesson(created.id(), updateCommand);
+                lessonService.updateLesson(created.id(), updateCommand, created.mentorId());
 
         // then
         assertEquals(updateCommand.title(), updated.title());

@@ -1,6 +1,7 @@
 package com.kosa.fillinv.lesson.service;
 
 import com.kosa.fillinv.lesson.entity.LessonType;
+import com.kosa.fillinv.lesson.service.client.StockClient;
 import com.kosa.fillinv.lesson.service.dto.LessonSearchCondition;
 import com.kosa.fillinv.lesson.service.dto.LessonThumbnail;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ class LessonReadServiceTest {
     private LessonService lessonService;
     private ProfileClient profileClient;
     private ReviewClient reviewClient;
+    private StockClient stockClient;
 
     private LessonReadService lessonReadService;
 
@@ -39,8 +41,10 @@ class LessonReadServiceTest {
         lessonService = mock(LessonService.class);
         profileClient = mock(ProfileClient.class);
         reviewClient = mock(ReviewClient.class);
+        stockClient = mock(StockClient.class);
 
-        lessonReadService = new LessonReadService(lessonService, reviewClient, profileClient);
+
+        lessonReadService = new LessonReadService(lessonService, reviewClient, profileClient, stockClient);
     }
 
     @Test
@@ -111,6 +115,7 @@ class LessonReadServiceTest {
                 now,                             // createdAt
                 now.plusSeconds(3600 * 24),      // closeAt: +1일
                 10000,
+                10,
                 now,                             // updatedAt
                 null,                             // deletedAt
                 Collections.emptyList(),          // availableTimeDTOList
