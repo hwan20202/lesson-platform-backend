@@ -7,6 +7,8 @@ import com.kosa.fillinv.lesson.repository.LessonTempRepository;
 import com.kosa.fillinv.review.repository.ReviewRepository;
 import com.kosa.fillinv.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -51,10 +53,10 @@ public class LessonPopularityScheduler {
 
     }
 
-//    @EventListener(ApplicationReadyEvent.class)
-//    public void init() {
-//        updateLessonPopularity();
-//    }
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        updateLessonPopularity();
+    }
 
     private void resetAllScores() {
         lessonRepository.resetAllPopularityScores();
@@ -114,8 +116,9 @@ public class LessonPopularityScheduler {
             }
 
             double finalScore = (recentAppCount * 0.6) + (v * 0.2) + (bayesianAvg * 0.2);
+            double roundedScore = Math.round(finalScore * 100.0) / 100.0;
 
-            tempToSave.add(new LessonTemp(lessonId, finalScore));
+            tempToSave.add(new LessonTemp(lessonId, roundedScore));
         }
 
         lessonTempRepository.deleteAll();

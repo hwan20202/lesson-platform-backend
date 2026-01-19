@@ -11,7 +11,7 @@ public enum LessonSortType {
     PRICE_ASC("price", Sort.Direction.ASC),
     PRICE_DESC("price", Sort.Direction.DESC),
 
-    POPULARITY("popularity", Sort.Direction.DESC);
+    POPULARITY("popularityScore", Sort.Direction.DESC);
 
     private final String property;
     private final Sort.Direction direction;
