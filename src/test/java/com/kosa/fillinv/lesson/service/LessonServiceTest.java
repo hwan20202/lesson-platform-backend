@@ -465,7 +465,7 @@ class LessonServiceTest {
         Page<LessonDTO> lessonDTOS = lessonService.searchLesson(lessonSearchCondition);
 
         // then
-        List<Lesson> allByTitleContaining = lessonRepository.findAllByTitleContaining(keyword);
+        List<Lesson> allByTitleContaining = lessonRepository.findAllByTitleContainingAndDeletedAtIsNull(keyword);
         assertFalse(allByTitleContaining.isEmpty());
         assertEquals(allByTitleContaining.size(), lessonDTOS.getTotalElements());
         assertFalse(
@@ -507,7 +507,7 @@ class LessonServiceTest {
         Page<LessonDTO> lessonDTOS = lessonService.searchLesson(lessonSearchCondition);
 
         // then
-        List<Lesson> allByTitleContaining = lessonRepository.findAllByCategoryId(categoryId);
+        List<Lesson> allByTitleContaining = lessonRepository.findAllByCategoryIdAndDeletedAtIsNull(categoryId);
         assertFalse(allByTitleContaining.isEmpty());
         assertEquals(allByTitleContaining.size(), lessonDTOS.getTotalElements());
         assertFalse(
@@ -543,7 +543,7 @@ class LessonServiceTest {
         Page<LessonDTO> lessonDTOS = lessonService.searchLesson(lessonSearchCondition);
 
         // then
-        List<Lesson> all = lessonRepository.findAllByOrderByPriceDesc();
+        List<Lesson> all = lessonRepository.findAllByDeletedAtIsNullOrderByPriceDesc();
         for (int i = 0; i < lessonDTOS.getContent().size(); i++) {
             assertEquals(all.get(i).getId(), lessonDTOS.getContent().get(i).id());
         }
@@ -559,7 +559,7 @@ class LessonServiceTest {
         Page<LessonDTO> lessonDTOS = lessonService.searchLesson(lessonSearchCondition);
 
         // then
-        List<Lesson> all = lessonRepository.findAllByOrderByPriceAsc();
+        List<Lesson> all = lessonRepository.findAllByDeletedAtIsNullOrderByPriceAsc();
         for (int i = 0; i < lessonDTOS.getContent().size(); i++) {
             assertEquals(all.get(i).getId(), lessonDTOS.getContent().get(i).id());
         }
