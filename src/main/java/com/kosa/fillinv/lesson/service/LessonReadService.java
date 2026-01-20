@@ -99,7 +99,7 @@ public class LessonReadService {
             Page<LessonDTO> lessonPage
     ) {
         if (lessonPage.isEmpty()) {
-            return lessonPage.map(lesson -> null);
+            return Page.empty(lessonPage.getPageable());
         }
 
         Set<String> mentorIds = lessonPage.stream()
