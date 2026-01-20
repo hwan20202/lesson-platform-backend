@@ -4,6 +4,7 @@ import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.lesson.controller.dto.*;
 import com.kosa.fillinv.lesson.service.LessonReadService;
 import com.kosa.fillinv.lesson.service.LessonRegisterService;
+import com.kosa.fillinv.lesson.service.LessonService;
 import com.kosa.fillinv.lesson.service.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ public class LessonController {
 
     private final LessonRegisterService lessonRegisterService;
     private final LessonReadService lessonReadService;
+    private final LessonService lessonService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public SuccessResponse<RegisterLessonResponse> registerLesson(
@@ -67,5 +69,16 @@ public class LessonController {
                 lessonId, request.toCommand(), thumbnail, principal.getUsername());
 
         return SuccessResponse.success(HttpStatus.OK, EditLessonResponse.of(updateLessonResult));
+    }
+
+    @DeleteMapping("/{lessonId}")
+    public SuccessResponse<Void> delete(
+            @PathVariable String lessonId,
+            @AuthenticationPrincipal UserDetails principal
+    ) {
+
+        lessonService.deleteLesson(lessonId, principal.getUsername());
+
+        return SuccessResponse.success(HttpStatus.OK);
     }
 }
