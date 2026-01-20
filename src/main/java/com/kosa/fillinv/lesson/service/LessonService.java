@@ -96,8 +96,13 @@ public class LessonService {
     }
 
     @Transactional
-    public void deleteLesson(String lessonId) {
-        findActiveLesson(lessonId).ifPresent(Lesson::delete);
+    public void deleteLesson(String lessonId, String ownerId) {
+        Lesson lesson = findActiveLesson(lessonId)
+                .orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
+
+        lesson.validateOwnership(ownerId);
+
+        lesson.delete();
     }
 
     @Transactional
