@@ -178,4 +178,8 @@ public class Lesson extends BaseEntity {
             throw new ResourceException.AccessDenied("해당 레슨에 대한 권한이 없습니다.");
         }
     }
+
+    public void updateMinPrice(int minPrice) {
+        this.price = minPrice;
+    }
 }
