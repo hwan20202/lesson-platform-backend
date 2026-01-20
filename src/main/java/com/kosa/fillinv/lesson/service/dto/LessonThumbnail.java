@@ -2,6 +2,8 @@ package com.kosa.fillinv.lesson.service.dto;
 
 import com.kosa.fillinv.lesson.service.client.MentorSummaryDTO;
 
+import java.time.Instant;
+
 public record LessonThumbnail(
         String lessonId,
         String thumbnailImage,
@@ -11,6 +13,7 @@ public record LessonThumbnail(
         Float rating,
         Long categoryId,
         String category,
+        Instant createdAt,
         Integer menteeCount
 ) {
     public static LessonThumbnail of(
@@ -29,6 +32,7 @@ public record LessonThumbnail(
                 rating,
                 lesson.categoryId(),
                 category,
+                lesson.createdAt(),
                 menteeCount
         );
     }
