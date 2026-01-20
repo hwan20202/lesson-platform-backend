@@ -18,11 +18,11 @@ public interface LessonRepository extends JpaRepository<Lesson, String>, JpaSpec
 
     List<Lesson> findAllByTitleContaining(String keyword);
 
-    List<Lesson> findAllByLessonType(LessonType lessonType);
+    List<Lesson> findAllByLessonTypeAndDeletedAtIsNull(LessonType lessonType);
 
     List<Lesson> findAllByCategoryId(Long categoryId);
 
-    List<Lesson> findAllByOrderByCreatedAtDesc();
+    List<Lesson> findAllByDeletedAtIsNullOrderByCreatedAtDesc();
 
     List<Lesson> findAllByOrderByPriceDesc();
 

@@ -30,9 +30,15 @@ public record LessonSearchCondition(
         );
     }
 
-    public static LessonSearchCondition ownBy(String mentorId) {
+    public LessonSearchCondition ownBy(String mentorId) {
         return new LessonSearchCondition(
-                null, null, null, mentorId, null, null, null
+                this.keyword,
+                this.lessonType,
+                this.categoryId,
+                mentorId,
+                this.sortType,
+                this.page,
+                this.size
         );
     }
 }

@@ -6,6 +6,7 @@ import com.kosa.fillinv.lesson.service.dto.LessonSearchCondition;
 import com.kosa.fillinv.lesson.service.dto.LessonThumbnail;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Page;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class LessonReadServiceTest {
@@ -92,6 +94,57 @@ class LessonReadServiceTest {
         verify(profileClient, times(1)).getMentors(any(Set.class));
         verify(reviewClient, times(1)).getAverageRating(any(Set.class));
         verify(lessonService, times(1)).searchLesson(any(LessonSearchCondition.class));
+    }
+
+    @Test
+    @DisplayName("mentorId로 조건이 강제되고 LessonThumbnail로 정상 변환된다")
+    void searchOwnedBy_success() {
+        // given
+        String mentorId = "mentor-001";
+
+        LessonSearchCondition condition =
+                LessonSearchCondition.defaultCondition();
+
+        LessonDTO lesson1 = create("lesson-001", "Java 강의",  LessonType.MENTORING,"mentor-001", 1L);
+        LessonDTO lesson2 = create("lesson-002", "Spring 강의", LessonType.ONEDAY,"mentor-001", 2L);
+
+        Page<LessonDTO> lessonPage =
+                new PageImpl<>(List.of(lesson1, lesson2));
+
+        given(lessonService.searchLesson(any()))
+                .willReturn(lessonPage);
+
+        given(profileClient.getMentors(Set.of(mentorId)))
+                .willReturn(Map.of(
+                        mentorId,
+                        new MentorSummaryDTO(mentorId, "멘토 이름", "thumbnail", "intro")
+                ));
+
+        given(reviewClient.getAverageRating(Set.of("lesson-001", "lesson-002")))
+                .willReturn(Map.of(
+                        "lesson-001", 4.5f,
+                        "lesson-002", 4.0f
+                ));
+
+        ArgumentCaptor<LessonSearchCondition> captor =
+                ArgumentCaptor.forClass(LessonSearchCondition.class);
+
+        // when
+        Page<LessonThumbnail> result =
+                lessonReadService.searchOwnedBy(condition, mentorId);
+
+        // then
+        verify(lessonService).searchLesson(captor.capture());
+
+        LessonSearchCondition resolved = captor.getValue();
+        assertThat(resolved.mentorId()).isEqualTo(mentorId);
+
+        assertThat(result.getContent()).hasSize(2);
+
+        LessonThumbnail thumbnail = result.getContent().get(0);
+        assertThat(thumbnail.lessonId()).isEqualTo("lesson-001");
+        assertThat(thumbnail.mentorNickName()).isEqualTo("멘토 이름");
+        assertThat(thumbnail.rating()).isEqualTo(4.5f);
     }
 
     public static LessonDTO create(

@@ -50,11 +50,12 @@ public class LessonController {
 
     @GetMapping("/mine")
     public SuccessResponse<PageResponse<LessonThumbnail>> mine(
-            @AuthenticationPrincipal UserDetails principal
+            @AuthenticationPrincipal UserDetails principal,
+            @ModelAttribute LessonSearchCondition condition
     ) {
         String mentorId = principal.getUsername();
 
-        Page<LessonThumbnail> result = lessonReadService.ownBy(mentorId);
+        Page<LessonThumbnail> result = lessonReadService.searchOwnedBy(condition, mentorId);
 
         return SuccessResponse.success(HttpStatus.OK, PageResponse.from(result));
     }
