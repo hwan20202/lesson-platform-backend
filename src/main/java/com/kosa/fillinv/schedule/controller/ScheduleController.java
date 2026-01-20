@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +41,11 @@ public class ScheduleController {
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
             @RequestBody ScheduleCreateRequest request
     ) {
-        String memberId = customMemberDetails.memberId();
+        // String memberId = customMemberDetails.memberId();
+        // [테스트용 코드] 로그인 정보가 없으면 기본 ID '13' 사용
+        String memberId = (customMemberDetails != null)
+                ? customMemberDetails.memberId()
+                : "13";
         String scheduleId = scheduleCreateService.createSchedule(memberId, request);
 
         // 요청 주소 - ServletUriComponentsBuilder 사용 시 서버 주소가 바뀌더라도 코드를 수정하지 않아도 됨
@@ -55,15 +61,56 @@ public class ScheduleController {
                 .body(SuccessResponse.success(HttpStatus.CREATED));
     }
 
-    // 스케쥴 전체 조회 / 대시보드 - 캘린더 전체 조회 (GET) - 시간순 정렬 (D-day가 적게 남은 순으로 정렬)
+    // 캘린더 / 스케쥴 전체 조회 (GET) - 시간순 정렬 (특정 날짜 위주)
     @GetMapping
-    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getScheduleList(
+    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getCalendarSchedules(
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
             @ModelAttribute ScheduleSearchRequest filter, // 필터링 조건 (date, status, title)
             @ParameterObject Pageable pageable
     ) {
-        String memberId = customMemberDetails.memberId();
-        Page<ScheduleListResponse> responses = scheduleInquiryService.getScheduleList(memberId, filter, pageable);
+        // String memberId = customMemberDetails.memberId();
+        // [테스트용 코드] 로그인 정보가 없으면 기본 ID '13' 사용
+        String memberId = (customMemberDetails != null)
+                ? customMemberDetails.memberId()
+                : "13";
+        Page<ScheduleListResponse> responses = scheduleInquiryService.getCalendarSchedules(memberId, filter, pageable);
+
+        return ResponseEntity
+                .ok(SuccessResponse.success(HttpStatus.OK, responses));
+    }
+
+    // 예정 스케줄: GET /api/v1/schedules/upcoming (현재 시간 이후, 오름차순)
+    @GetMapping("/upcoming")
+    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getUpcomingSchedules(
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
+            @ModelAttribute ScheduleSearchRequest filter, // 필터링 조건 (date, status, title)
+            @ParameterObject Pageable pageable
+    ) {
+        // String memberId = customMemberDetails.memberId();
+        // [테스트용 코드] 로그인 정보가 없으면 기본 ID '13' 사용
+        String memberId = (customMemberDetails != null)
+                ? customMemberDetails.memberId()
+                : "13";
+        Page<ScheduleListResponse> responses = scheduleInquiryService.getUpcomingSchedules(memberId, filter, pageable);
+
+        return ResponseEntity
+                .ok(SuccessResponse.success(HttpStatus.OK, responses));
+    }
+
+    // 과거 스케줄: GET /api/v1/schedules/past (현재 시간 이전, 내림차순)
+    @GetMapping("/past")
+    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getPastSchedules(
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
+            @ModelAttribute ScheduleSearchRequest filter, // 필터링 조건 (date, status, title)
+            // startTime 내림차순 정렬
+            @ParameterObject @PageableDefault(size = 10, sort = "st.startTime", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        // String memberId = customMemberDetails.memberId();
+        // [테스트용 코드] 로그인 정보가 없으면 기본 ID '13' 사용
+        String memberId = (customMemberDetails != null)
+                ? customMemberDetails.memberId()
+                : "13";
+        Page<ScheduleListResponse> responses = scheduleInquiryService.getPastSchedules(memberId, filter, pageable);
 
         return ResponseEntity
                 .ok(SuccessResponse.success(HttpStatus.OK, responses));

@@ -13,12 +13,15 @@ import com.kosa.fillinv.schedule.entity.ScheduleTime;
 import com.kosa.fillinv.schedule.repository.ScheduleRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,8 +35,8 @@ public class ScheduleInquiryService { // 스케줄 조회 서비스
     private final MemberRepository memberRepository;
 
     // ------- Public API - 외부 호출 핵심 메서드
-    // 전체 스케쥴 조회
-    public Page<ScheduleListResponse> getScheduleList(String loginMemberId, ScheduleSearchRequest filter, Pageable pageable) {
+    // 캘린더 및 전체 스케쥴 조회 (날짜가 없으면 전체, 있으면 해당 일자 조회)
+    public Page<ScheduleListResponse> getCalendarSchedules(String loginMemberId, ScheduleSearchRequest filter, Pageable pageable) {
 
         // LocalDateTime 범위 변수 선언
         LocalDateTime start = null;
@@ -43,17 +46,25 @@ public class ScheduleInquiryService { // 스케줄 조회 서비스
             start = filter.date().atStartOfDay();
             end = start.plusDays(1); // 다음 날 0시
         }
+        return getFilteredPage(loginMemberId, filter, start, end, pageable);
+    }
 
-        // filter에서 title을 꺼내는데 검색어가 없을 경우 null 처리
-        String titleParam = (filter.title() != null && !filter.title().isBlank()) ? filter.title() : null;
-        // 상태값 String을 Enum으로 변환하거나 null 처리
-        ScheduleStatus statusParam = (filter.status() != null && !filter.status().isBlank())
-                ? ScheduleStatus.valueOf(filter.status().toUpperCase()) // Enum 변환
-                : null;
+    // 예정 스케쥴 조회 (현재 시간 이후)
+    public Page<ScheduleListResponse> getUpcomingSchedules(String loginMemberId, ScheduleSearchRequest filter, Pageable pageable) {
+        // start를 현재시간으로 고정하여 미래 데이터만 조회
+        return getFilteredPage(loginMemberId, filter, LocalDateTime.now(), null, pageable);
+    }
 
-        // 로그인한 사용자가 연관된 스케줄을 필터링
-        Page<Schedule> schedulePage = scheduleRepository.findAllByMemberIdWithFilter(loginMemberId, titleParam, start, end, statusParam, pageable);
-        return convertToScheduleListResponsePage(schedulePage, loginMemberId);
+    // 과거 스케쥴 조회 (현재 시간 이전)
+    public Page<ScheduleListResponse> getPastSchedules(String loginMemberId, ScheduleSearchRequest filter, Pageable pageable) {
+        // 정렬 조건만 내림차순으로 변경
+        Pageable sortedByDesc = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by("startTime").descending()
+        );
+        // end를 현재시간으로 고정하여 과거 데이터만 조회
+        return getFilteredPage(loginMemberId, filter, null, LocalDateTime.now(), pageable);
     }
 
     // 스케쥴 상세 조회
@@ -162,5 +173,27 @@ public class ScheduleInquiryService { // 스케줄 조회 서비스
                     startTime,
                     userRole);
         });
+    }
+
+    // 특정 날짜 검색, 예정 스케쥴, 과거 스케쥴 조회 공통 로직 (실제 필터링 및 조회)
+    private Page<ScheduleListResponse> getFilteredPage(String loginMemberId, ScheduleSearchRequest filter, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        // LocalDateTime -> Instant 변환
+        Instant startInstant = (start != null)
+                ? start.atZone(ZoneId.of("Asia/Seoul")).toInstant()
+                : null;
+        Instant endInstant = (end != null)
+                ? end.atZone(ZoneId.of("Asia/Seoul")).toInstant()
+                : null;
+
+        // filter에서 title을 꺼내는데 검색어가 없을 경우 null 처리
+        String titleParam = (filter.title() != null && !filter.title().isBlank()) ? filter.title() : null;
+        // 상태값 String을 Enum으로 변환하거나 null 처리
+        ScheduleStatus statusParam = (filter.status() != null && !filter.status().isBlank())
+                ? ScheduleStatus.valueOf(filter.status().toUpperCase()) // Enum 변환
+                : null;
+
+        // 로그인한 사용자가 연관된 스케줄을 필터링
+        Page<Schedule> schedulePage = scheduleRepository.findAllByMemberIdWithFilter(loginMemberId, titleParam, startInstant, endInstant, statusParam, pageable);
+        return convertToScheduleListResponsePage(schedulePage, loginMemberId);
     }
 }

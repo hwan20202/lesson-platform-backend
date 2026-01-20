@@ -3,7 +3,7 @@ package com.kosa.fillinv.schedule.repository;
 import com.kosa.fillinv.review.dto.UnwrittenReviewVO;
 import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,14 +42,15 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
             "LEFT JOIN s.scheduleTimeList st " +
             "WHERE (s.mentorId = :memberId OR s.menteeId = :memberId) " + // 스케쥴의 멘토나 멘티가 로그인한 사람의 경우를 찾기
             "AND (:title IS NULL OR s.lessonTitle LIKE %:title%) " + // 제목 필터
-            "AND (:start IS NULL OR st.startTime >= :start AND st.startTime < :end) " +
-            "AND (:status IS NULL OR s.status = :status) " +
-            "ORDER BY st.startTime ASC")
+            "AND (:start IS NULL OR st.startTime >= :start) " + // 시작 지점 조건
+            "AND (:end IS NULL OR st.startTime < :end) " + // 종료 지점 조건
+            "AND (:status IS NULL OR s.status = :status)")
+    // 기본 정렬 (과거 조회의 경우 Pageable에서 DESC)
     Page<Schedule> findAllByMemberIdWithFilter(
             @Param("memberId") String memberId,
             @Param("title") String title,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
+            @Param("start") Instant start,
+            @Param("end") Instant end,
             @Param("status") ScheduleStatus status,
             Pageable pageable
     );
