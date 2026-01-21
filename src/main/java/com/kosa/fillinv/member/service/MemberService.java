@@ -83,8 +83,7 @@ public class MemberService {
                             }
 
                             return ProfileResponseDto.of(member, profile, category);
-                        }
-                ));
+                        }));
     }
 
     @Transactional
@@ -120,11 +119,16 @@ public class MemberService {
 
     @Transactional
     public void updateNickname(String memberId, String nickname) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberException.MemberNotFound::new);
+
+        if (nickname.equals(member.getNickname())) {
+            return;
+        }
+
         if (memberRepository.existsByNickname(nickname)) {
             throw new MemberException(ErrorCode.NICKNAME_DUPLICATION);
         }
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberException.MemberNotFound::new);
         member.updateNickname(nickname);
     }
 
@@ -141,6 +145,21 @@ public class MemberService {
         }
 
         profile.updateIntroduceAndCategory(requestDto.introduction(), requestDto.categoryId());
+    }
+
+    @Transactional
+    public void updatePhoneNum(String memberId, String phoneNum) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberException.MemberNotFound::new);
+
+        if (phoneNum.equals(member.getPhoneNum())) {
+            return;
+        }
+
+        if (memberRepository.existsByPhoneNum(phoneNum)) {
+            throw new MemberException(ErrorCode.PHONE_NUM_DUPLICATION);
+        }
+        member.updatePhoneNum(phoneNum);
     }
 
     private void validateDuplicateEmail(String email) {
