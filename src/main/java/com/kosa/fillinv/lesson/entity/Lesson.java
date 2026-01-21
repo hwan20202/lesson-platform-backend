@@ -1,11 +1,13 @@
 package com.kosa.fillinv.lesson.entity;
 
 import com.kosa.fillinv.global.entity.BaseEntity;
+import com.kosa.fillinv.global.exception.ResourceException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -49,11 +51,21 @@ public class Lesson extends BaseEntity {
     @Column(name = "price")
     private Integer price;
 
+    @Column(name = "seats")
+    private Integer seats;
+
+    @Column(name = "category_path", nullable = false)
+    private String categoryPath;
+
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<AvailableTime> availableTimeList;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<Option> optionList;
+
+    @Column(name = "popularity_score", nullable = false)
+    @ColumnDefault("0.0")
+    private Double popularityScore = 0.0;
 
     @Builder
     public Lesson(String id,
@@ -64,8 +76,10 @@ public class Lesson extends BaseEntity {
                   String location,
                   String mentorId,
                   Long categoryId,
+                  String categoryPath,
                   Instant closeAt,
-                  Integer price) {
+                  Integer price,
+                  Integer seats) {
         this.id = id;
         this.title = title;
         this.lessonType = lessonType;
@@ -74,8 +88,10 @@ public class Lesson extends BaseEntity {
         this.location = location;
         this.mentorId = mentorId;
         this.categoryId = categoryId;
+        this.categoryPath = categoryPath;
         this.closeAt = closeAt;
         this.price = price;
+        this.seats = seats;
         this.availableTimeList = new ArrayList<>();
         this.optionList = new ArrayList<>();
     }
@@ -86,7 +102,7 @@ public class Lesson extends BaseEntity {
     }
 
     public void updateThumbnailImage(String thumbnailImageUrl) {
-        if (thumbnailImageUrl.isBlank()) return;
+        if (thumbnailImageUrl == null || thumbnailImageUrl.isBlank()) return;
         this.thumbnailImage = thumbnailImageUrl;
     }
 
@@ -163,7 +179,21 @@ public class Lesson extends BaseEntity {
         });
     }
 
+    public void updatePopularityScore(Double score) {
+        this.popularityScore = (score == null) ? 0.0 : score;
+    }
+
     public List<Option> getOptionList() {
         return optionList.stream().filter(option -> option.getDeletedAt() == null).toList();
+    }
+
+    public void validateOwnership(String ownerId) {
+        if (!this.mentorId.equals(ownerId)) {
+            throw new ResourceException.AccessDenied("해당 레슨에 대한 권한이 없습니다.");
+        }
+    }
+
+    public void updateMinPrice(int minPrice) {
+        this.price = minPrice;
     }
 }

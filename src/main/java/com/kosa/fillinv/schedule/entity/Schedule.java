@@ -89,13 +89,11 @@ public class Schedule extends BaseEntity {
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<ScheduleTime> scheduleTimeList = new ArrayList<>();
 
-    // 한 번에 ScheduleTime 추가 (단일 건 처리)
     public void addScheduleTime(ScheduleTime scheduleTime) {
         scheduleTime.setSchedule(this); // 양방향 연관관계 설정
         this.scheduleTimeList.add(scheduleTime);
     }
 
-    // 한 번에 여러 ScheduleTime 추가 (묶음 처리)
     public void addScheduleTime(List<ScheduleTime> scheduleTimeList) {
         scheduleTimeList.forEach(this::addScheduleTime);
     }
@@ -103,5 +101,10 @@ public class Schedule extends BaseEntity {
     // 스케쥴 상태 변경 메서드
     public void updateStatus(ScheduleStatus scheduleStatus) {
         this.status = scheduleStatus;
+    }
+
+    public void markPaymentCompleted() {
+        if (status != ScheduleStatus.PAYMENT_PENDING) return;
+        this.status = ScheduleStatus.APPROVAL_PENDING;
     }
 }

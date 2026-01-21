@@ -12,12 +12,28 @@ public class LessonSpecifications {
     public static Specification<Lesson> search(
             String keyword,
             LessonType lessonType,
-            Long categoryId
+            String categoryPath,
+            String mentorId
     ) {
-        return Specification
-                .where(keywordContains(keyword))
+        return Specification.where(deletedAtIsNull())
+                .and(keywordContains(keyword))
                 .and(lessonTypeEq(lessonType))
-                .and(categoryIdEq(categoryId));
+                .and(categoryPathStartsWith(categoryPath))
+                .and(mentorIdEq(mentorId));
+    }
+
+    public static Specification<Lesson> mentorIdEq(String mentorId) {
+        return (root, query, cb) -> {
+            if (mentorId == null || mentorId.isBlank()) {
+                return null;
+            }
+            return cb.equal(root.get("mentorId"), mentorId);
+        };
+    }
+
+    public static Specification<Lesson> deletedAtIsNull() {
+        return (root, query, cb) ->
+                cb.isNull(root.get("deletedAt"));
     }
 
     private static Specification<Lesson> keywordContains(String keyword) {
@@ -38,12 +54,16 @@ public class LessonSpecifications {
         };
     }
 
-    private static Specification<Lesson> categoryIdEq(Long categoryId) {
+    private static Specification<Lesson> categoryPathStartsWith(String categoryPath) {
         return (root, query, cb) -> {
-            if (categoryId == null) {
+            if (categoryPath == null || categoryPath.isBlank()) {
                 return null;
             }
-            return cb.equal(root.get("categoryId"), categoryId);
+
+            return cb.like(
+                    root.get("categoryPath"),
+                    categoryPath + "%"
+            );
         };
     }
 }

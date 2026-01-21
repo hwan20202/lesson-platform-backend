@@ -2,6 +2,8 @@ package com.kosa.fillinv.schedule.dto.response;
 
 import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
+import com.kosa.fillinv.schedule.entity.ScheduleTime;
+
 import java.time.Instant;
 
 public record ScheduleListResponse( // 스케쥴 상태 일치 조회
@@ -10,6 +12,8 @@ public record ScheduleListResponse( // 스케쥴 상태 일치 조회
         String mentorNickname,
         String menteeNickname,
         Instant startTime,
+        Instant endTime,
+        Integer price,
         ScheduleStatus status,
         String lessonType,
         String optionName,
@@ -23,10 +27,28 @@ public record ScheduleListResponse( // 스케쥴 상태 일치 조회
                 mentorNickname,
                 menteeNickname,
                 startTime,
+                null,
+                s.getPrice(),
                 s.getStatus(),
                 s.getLessonType(),
                 s.getOptionName(),
                 null // 역할을 굳이 보내지 않음
+        );
+    }
+
+    public static ScheduleListResponse from(Schedule s, String mentorNickname, String menteeNickname, ScheduleTime scheduleTime, String userRole) {
+        return new ScheduleListResponse(
+                s.getId(),
+                s.getLessonTitle(),
+                mentorNickname,
+                menteeNickname,
+                scheduleTime.getStartTime(),
+                scheduleTime.getEndTime(),
+                s.getPrice(),
+                s.getStatus(),
+                s.getLessonType(),
+                s.getOptionName(),
+                userRole
         );
     }
 
@@ -38,6 +60,8 @@ public record ScheduleListResponse( // 스케쥴 상태 일치 조회
                 mentorNickname,
                 menteeNickname,
                 startTime,
+                null,
+                s.getPrice(),
                 s.getStatus(),
                 s.getLessonType(),
                 s.getOptionName(),

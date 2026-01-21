@@ -3,8 +3,10 @@ package com.kosa.fillinv.member.controller;
 import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.member.dto.profile.IntroductionRequestDto;
 import com.kosa.fillinv.member.dto.profile.NicknameRequestDto;
+import com.kosa.fillinv.member.dto.profile.PhoneNumRequestDto;
 import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
 import com.kosa.fillinv.member.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import org.springframework.http.HttpStatus;
@@ -48,6 +50,13 @@ public class ProfileController {
     public SuccessResponse<Void> updateIntroduction(@AuthenticationPrincipal CustomMemberDetails userDetails,
             @RequestBody IntroductionRequestDto requestDto) {
         memberService.updateIntroduction(userDetails.getUsername(), requestDto);
+        return SuccessResponse.success(HttpStatus.OK);
+    }
+
+    @PatchMapping("/me/phone")
+    public SuccessResponse<Void> updatePhoneNum(@AuthenticationPrincipal CustomMemberDetails userDetails,
+            @Valid @RequestBody PhoneNumRequestDto requestDto) {
+        memberService.updatePhoneNum(userDetails.getUsername(), requestDto.phoneNum());
         return SuccessResponse.success(HttpStatus.OK);
     }
 }

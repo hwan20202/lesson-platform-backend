@@ -1,17 +1,18 @@
 package com.kosa.fillinv.lesson.service;
 
+import com.kosa.fillinv.category.service.CategoryService;
+import com.kosa.fillinv.lesson.controller.dto.LessonSearchRequest;
 import com.kosa.fillinv.lesson.entity.LessonType;
+import com.kosa.fillinv.lesson.service.client.*;
 import com.kosa.fillinv.lesson.service.dto.LessonSearchCondition;
 import com.kosa.fillinv.lesson.service.dto.LessonThumbnail;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Page;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.kosa.fillinv.lesson.service.client.MentorSummaryDTO;
-import com.kosa.fillinv.lesson.service.client.ProfileClient;
-import com.kosa.fillinv.lesson.service.client.ReviewClient;
 import com.kosa.fillinv.lesson.service.dto.LessonDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +25,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class LessonReadServiceTest {
@@ -31,6 +33,9 @@ class LessonReadServiceTest {
     private LessonService lessonService;
     private ProfileClient profileClient;
     private ReviewClient reviewClient;
+    private StockClient stockClient;
+    private CategoryService categoryService;
+    private ScheduleClient scheduleClient;
 
     private LessonReadService lessonReadService;
 
@@ -39,8 +44,11 @@ class LessonReadServiceTest {
         lessonService = mock(LessonService.class);
         profileClient = mock(ProfileClient.class);
         reviewClient = mock(ReviewClient.class);
+        stockClient = mock(StockClient.class);
+        categoryService = mock(CategoryService.class);
+        scheduleClient = mock(ScheduleClient.class);
 
-        lessonReadService = new LessonReadService(lessonService, reviewClient, profileClient);
+        lessonReadService = new LessonReadService(lessonService, reviewClient, profileClient, stockClient, categoryService, scheduleClient);
     }
 
     @Test
@@ -90,6 +98,56 @@ class LessonReadServiceTest {
         verify(lessonService, times(1)).searchLesson(any(LessonSearchCondition.class));
     }
 
+    @Test
+    @DisplayName("mentorId로 조건이 강제되고 LessonThumbnail로 정상 변환된다")
+    void searchOwnedBy_success() {
+        // given
+        String mentorId = "mentor-001";
+
+        LessonSearchRequest request = LessonSearchRequest.empty();
+
+        LessonDTO lesson1 = create("lesson-001", "Java 강의",  LessonType.MENTORING,"mentor-001", 1L);
+        LessonDTO lesson2 = create("lesson-002", "Spring 강의", LessonType.ONEDAY,"mentor-001", 2L);
+
+        Page<LessonDTO> lessonPage =
+                new PageImpl<>(List.of(lesson1, lesson2));
+
+        given(lessonService.searchLesson(any()))
+                .willReturn(lessonPage);
+
+        given(profileClient.getMentors(Set.of(mentorId)))
+                .willReturn(Map.of(
+                        mentorId,
+                        new MentorSummaryDTO(mentorId, "멘토 이름", "thumbnail", "intro")
+                ));
+
+        given(reviewClient.getAverageRating(Set.of("lesson-001", "lesson-002")))
+                .willReturn(Map.of(
+                        "lesson-001", 4.5f,
+                        "lesson-002", 4.0f
+                ));
+
+        ArgumentCaptor<LessonSearchCondition> captor =
+                ArgumentCaptor.forClass(LessonSearchCondition.class);
+
+        // when
+        Page<LessonThumbnail> result =
+                lessonReadService.searchOwnedBy(request, mentorId);
+
+        // then
+        verify(lessonService).searchLesson(captor.capture());
+
+        LessonSearchCondition resolved = captor.getValue();
+        assertThat(resolved.mentorId()).isEqualTo(mentorId);
+
+        assertThat(result.getContent()).hasSize(2);
+
+        LessonThumbnail thumbnail = result.getContent().get(0);
+        assertThat(thumbnail.lessonId()).isEqualTo("lesson-001");
+        assertThat(thumbnail.mentorNickName()).isEqualTo("멘토 이름");
+        assertThat(thumbnail.rating()).isEqualTo(4.5f);
+    }
+
     public static LessonDTO create(
             String id,
             String title,
@@ -111,8 +169,10 @@ class LessonReadServiceTest {
                 now,                             // createdAt
                 now.plusSeconds(3600 * 24),      // closeAt: +1일
                 10000,
+                10,
                 now,                             // updatedAt
                 null,                             // deletedAt
+                0.0, // popularityScore
                 Collections.emptyList(),          // availableTimeDTOList
                 Collections.emptyList()           // optionDTOList
         );
