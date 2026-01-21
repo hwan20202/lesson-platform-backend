@@ -1,5 +1,7 @@
 package com.kosa.fillinv.schedule.controller;
 
+import com.kosa.fillinv.global.exception.BusinessException;
+import com.kosa.fillinv.global.response.ErrorCode;
 import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.global.security.details.CustomMemberDetails;
 import com.kosa.fillinv.schedule.controller.dto.CreateScheduleResponse;
@@ -18,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -164,6 +165,27 @@ public class ScheduleController {
                 .ok(SuccessResponse.success(HttpStatus.OK, responses));
     }
 
+    // 스케쥴 상태 변경 (PATCH)
+    // 멘토의 멘티 수강신청 승인/거절 처리 (승인 대기인 상태일 경우 해당 상태 변경 가능)
+    @PatchMapping("/{scheduleId}/status")
+    public ResponseEntity<SuccessResponse<Void>> updateStatus(
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
+            @PathVariable String scheduleId,
+            @RequestParam ScheduleStatus next
+    ) {
+        String memberId = customMemberDetails.memberId();
+
+        switch (next) {
+            case APPROVED -> scheduleService.approveLessonByMentor(memberId, scheduleId);
+            case CANCELED -> scheduleService.rejectLessonByMentor(memberId, scheduleId);
+            case COMPLETED -> scheduleService.completeLesson(memberId, scheduleId);
+            default -> throw new BusinessException(ErrorCode.INVALID_SCHEDULE_STATUS);
+        }
+
+        return ResponseEntity.ok(SuccessResponse.success(HttpStatus.OK));
+    }
+
+
     // 상태 일치 스케쥴 조회
     // Ex: GET /api/v1/schedules/1/status/PAYMENT_PENDING
     @GetMapping("/{scheduleId}/status/{status}")
@@ -175,21 +197,6 @@ public class ScheduleController {
 
         return ResponseEntity
                 .ok(SuccessResponse.success(HttpStatus.OK, response));
-    }
-
-    // 스케쥴 상태 변경 (PATCH)
-    // 멘토의 멘티 수강신청 승인/거절 처리 (승인 대기인 상태일 경우 해당 상태 변경 가능)
-    @PatchMapping("/{scheduleId}/status")
-    public ResponseEntity<SuccessResponse<ScheduleListResponse>> decideLessonStatus(
-            @PathVariable String scheduleId,
-            @RequestParam boolean approve // true: 승인, false: 거절
-    ) {
-        ScheduleListResponse response = approve ?
-                scheduleService.approveLessonByMentor(scheduleId) : // 승인
-                scheduleService.rejectLessonByMentor(scheduleId) // 거절
-                ;
-
-        return ResponseEntity.ok(SuccessResponse.success(HttpStatus.OK, response));
     }
 
     // 멘티 모드: 내 수강 신청 목록 조회 (페이지네이션)
