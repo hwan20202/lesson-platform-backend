@@ -184,7 +184,7 @@ public class ScheduleService {
     public void rejectLessonByMentor(String memberId, String scheduleId) {
         Schedule schedule = validator.getSchedule(scheduleId);
 
-        // 스케쥴 취소는 스케쥴 참여자(멘토 또는 멘티)만 가능
+        // 스케쥴 취소는 스케쥴 멘토만 가능
         schedule.validateMentor(memberId);
 
         // 승인 대기 상태인 스케쥴만 취소로 상태 변경 가능
@@ -196,6 +196,7 @@ public class ScheduleService {
     }
 
     // 해당 레슨 수강이 모두 끝난 경우 (승인 -> 완료)
+    @Transactional
     public void completeLesson(String memberId, String scheduleId) {
         Schedule schedule = validator.getSchedule(scheduleId);
 
