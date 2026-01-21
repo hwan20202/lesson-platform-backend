@@ -11,10 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
-
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -52,4 +50,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
 
     @Query("SELECT s.lessonId, COUNT(s) FROM Schedule s JOIN Lesson l ON s.lessonId = l.id WHERE s.createdAt >= :startDate AND s.deletedAt IS NULL AND l.deletedAt IS NULL GROUP BY s.lessonId")
     List<Object[]> countByLessonIdAndCreatedAtAfter(@Param("startDate") Instant startDate);
+
+    @Query("SELECT new com.kosa.fillinv.lesson.service.dto.BookedTimeVO(st.startTime, st.endTime) " +
+            "FROM Schedule s " +
+            "JOIN s.scheduleTimeList st " +
+            "WHERE s.lessonId = :lessonId AND s.status IN :statuses")
+    List<com.kosa.fillinv.lesson.service.dto.BookedTimeVO> findBookedTimesByLessonIdAndStatusIn(
+            @Param("lessonId") String lessonId, @Param("statuses") Collection<ScheduleStatus> statuses);
 }
