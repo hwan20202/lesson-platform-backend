@@ -62,6 +62,14 @@ public class LessonService {
             stockRepository.save(createStockEntityForStudyLesson(saved));
         }
 
+        if (saved.getLessonType() == LessonType.MENTORING) {
+            int minPrice = saved.getOptionList().stream().mapToInt(Option::getPrice).min().orElse(0);
+            saved.updateMinPrice(minPrice);
+        } else if (saved.getLessonType() == LessonType.ONEDAY) {
+            int minPrice = saved.getAvailableTimeList().stream().mapToInt(AvailableTime::getPrice).min().orElse(0);
+            saved.updateMinPrice(minPrice);
+        }
+
         return CreateLessonResult.of(saved);
     }
 
