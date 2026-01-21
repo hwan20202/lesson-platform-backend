@@ -83,8 +83,7 @@ public class MemberService {
                             }
 
                             return ProfileResponseDto.of(member, profile, category);
-                        }
-                ));
+                        }));
     }
 
     @Transactional
@@ -141,6 +140,16 @@ public class MemberService {
         }
 
         profile.updateIntroduceAndCategory(requestDto.introduction(), requestDto.categoryId());
+    }
+
+    @Transactional
+    public void updatePhoneNum(String memberId, String phoneNum) {
+        if (memberRepository.existsByPhoneNum(phoneNum)) {
+            throw new MemberException(ErrorCode.PHONE_NUM_DUPLICATION);
+        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberException.MemberNotFound::new);
+        member.updatePhoneNum(phoneNum);
     }
 
     private void validateDuplicateEmail(String email) {
