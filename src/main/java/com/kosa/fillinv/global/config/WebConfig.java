@@ -9,8 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // http://localhost:8080/resources/files/logo.png 요청이 들어오면
-        // src/main/resources/static/ 하위에서 파일을 찾도록 매핑
+        // http://localhost:8080/resources/files/ 하위에 접근 시 classpath:/files/ 경로에서 리소스를 제공
         registry.addResourceHandler("/resources/files/**")
                 .addResourceLocations("classpath:/files/");
     }
