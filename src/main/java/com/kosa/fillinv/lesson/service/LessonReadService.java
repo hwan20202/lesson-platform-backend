@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,8 @@ public class LessonReadService {
     private final ScheduleClient scheduleClient;
 
     private static final Set<ScheduleStatus> PARTICIPATED_STATUSES = Set.of(ScheduleStatus.APPROVED, ScheduleStatus.COMPLETED);
+
+    private static final Set<ScheduleStatus> MENTORING_BOOKED_STATUES = Set.of(ScheduleStatus.PAYMENT_PENDING, ScheduleStatus.APPROVAL_PENDING, ScheduleStatus.APPROVED);
 
     public Page<LessonThumbnail> search() {
         return search(LessonSearchRequest.empty());
@@ -126,13 +129,19 @@ public class LessonReadService {
                 PARTICIPATED_STATUSES
         );
 
+        List<BookedTimeVO> bookedTimes = null;
+        if (lessonDTO.lessonType() == LessonType.MENTORING) {
+            bookedTimes = scheduleClient.getBookedTimes(request.lessonId(), MENTORING_BOOKED_STATUES);
+        }
+
         return LessonDetailResult.of(
                 mentorSummaryDTO,
                 lessonDTO,
                 lessonRemainSeats,
                 availableTimeRemainSeats,
                 category.getName(),
-                menteeCount == null ? 0 : menteeCount
+                menteeCount == null ? 0 : menteeCount,
+                bookedTimes
         );
     }
 
