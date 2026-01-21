@@ -1,5 +1,6 @@
 package com.kosa.fillinv.schedule.repository;
 
+import com.kosa.fillinv.lesson.service.dto.BookedTimeVO;
 import com.kosa.fillinv.lesson.service.dto.LessonCountVO;
 import com.kosa.fillinv.review.dto.UnwrittenReviewVO;
 import com.kosa.fillinv.schedule.entity.Schedule;
@@ -55,6 +56,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, String> {
             "FROM Schedule s " +
             "JOIN s.scheduleTimeList st " +
             "WHERE s.lessonId = :lessonId AND s.status IN :statuses")
-    List<com.kosa.fillinv.lesson.service.dto.BookedTimeVO> findBookedTimesByLessonIdAndStatusIn(
-            @Param("lessonId") String lessonId, @Param("statuses") Collection<ScheduleStatus> statuses);
+    List<BookedTimeVO> findBookedTimesByLessonIdAndStatusIn(@Param("lessonId") String lessonId, @Param("statuses") Collection<ScheduleStatus> statuses);
 }
