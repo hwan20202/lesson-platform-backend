@@ -3,12 +3,15 @@ package com.kosa.fillinv.lesson.service;
 import com.kosa.fillinv.global.exception.ResourceException;
 import com.kosa.fillinv.lesson.entity.AvailableTime;
 import com.kosa.fillinv.lesson.entity.Lesson;
+import com.kosa.fillinv.lesson.entity.LessonType;
 import com.kosa.fillinv.lesson.entity.Option;
 import com.kosa.fillinv.lesson.repository.AvailableTimeRepository;
 import com.kosa.fillinv.lesson.repository.LessonRepository;
 import com.kosa.fillinv.lesson.repository.LessonSpecifications;
 import com.kosa.fillinv.lesson.repository.OptionRepository;
 import com.kosa.fillinv.lesson.service.dto.*;
+import com.kosa.fillinv.stock.entity.Stock;
+import com.kosa.fillinv.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,11 +32,12 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final AvailableTimeRepository availableTimeRepository;
     private final OptionRepository optionRepository;
+    private final StockRepository stockRepository;
 
     public Page<LessonDTO> searchLesson(LessonSearchCondition condition) {
         Sort sortBy = condition.sortType().toSort();
         PageRequest pageRequest = PageRequest.of(condition.page(), condition.size(), sortBy);
-        Specification<Lesson> search = LessonSpecifications.search(condition.keyword(), condition.lessonType(), condition.categoryId());
+        Specification<Lesson> search = LessonSpecifications.search(condition.keyword(), condition.lessonType(), condition.categoryId(), condition.mentorId());
 
         return lessonRepository.findAll(search, pageRequest).map(LessonDTO::of);
     }
@@ -51,6 +55,20 @@ public class LessonService {
                 .forEach(lesson::addAvailableTime);
 
         Lesson saved = lessonRepository.save(lesson);
+
+        if (saved.getLessonType() == LessonType.ONEDAY) {
+            stockRepository.saveAll(createStockEntityForOnedayLesson(saved));
+        } else if (saved.getLessonType() == LessonType.STUDY) {
+            stockRepository.save(createStockEntityForStudyLesson(saved));
+        }
+
+        if (saved.getLessonType() == LessonType.MENTORING) {
+            int minPrice = saved.getOptionList().stream().mapToInt(Option::getPrice).min().orElse(0);
+            saved.updateMinPrice(minPrice);
+        } else if (saved.getLessonType() == LessonType.ONEDAY) {
+            int minPrice = saved.getAvailableTimeList().stream().mapToInt(AvailableTime::getPrice).min().orElse(0);
+            saved.updateMinPrice(minPrice);
+        }
 
         return CreateLessonResult.of(saved);
     }
@@ -70,8 +88,10 @@ public class LessonService {
 
 
     @Transactional
-    public UpdateLessonResult updateLesson(String lessonId, UpdateLessonCommand command) {
+    public UpdateLessonResult updateLesson(String lessonId, UpdateLessonCommand command, String ownerId) {
         Lesson lesson = findActiveLesson(lessonId).orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
+
+        lesson.validateOwnership(ownerId);
 
         lesson.updateTitle(command.title());
         lesson.updateThumbnailImage(command.thumbnailImage());
@@ -84,8 +104,13 @@ public class LessonService {
     }
 
     @Transactional
-    public void deleteLesson(String lessonId) {
-        findActiveLesson(lessonId).ifPresent(Lesson::delete);
+    public void deleteLesson(String lessonId, String ownerId) {
+        Lesson lesson = findActiveLesson(lessonId)
+                .orElseThrow(() -> new ResourceException.NotFound(LESSON_NOT_FOUND_MESSAGE_FORMAT(lessonId)));
+
+        lesson.validateOwnership(ownerId);
+
+        lesson.delete();
     }
 
     @Transactional
@@ -186,6 +211,9 @@ public class LessonService {
     }
 
     private AvailableTime createAvailableTimeEntity(Lesson lesson, CreateAvailableTimeCommand command) {
+        if (lesson.getLessonType() == LessonType.ONEDAY && (command.seats() == null || command.seats() <= 0)) {
+            throw new ResourceException.InvalidArgument(INVALID_SEAT);
+        }
 
         return AvailableTime.builder()
                 .id(UUID.randomUUID().toString())
@@ -193,6 +221,7 @@ public class LessonService {
                 .startTime(command.startTime())
                 .endTime(command.endTime())
                 .price(command.price())
+                .seats(command.seats())
                 .build();
     }
 
@@ -226,7 +255,13 @@ public class LessonService {
             throw new ResourceException.InvalidArgument(CATEGORY_ID_REQUIRED);
         }
 
-        return Lesson.builder()
+        if (command.lessonType() == LessonType.STUDY) {
+            if (command.seats() == null || command.seats() <= 0) {
+                throw new ResourceException.InvalidArgument(INVALID_SEAT);
+            }
+        }
+
+        Lesson.LessonBuilder lessonBuilder = Lesson.builder()
                 .id(UUID.randomUUID().toString())
                 .title(command.title())
                 .lessonType(command.lessonType())
@@ -235,7 +270,31 @@ public class LessonService {
                 .location(command.location())
                 .mentorId(command.mentorId())
                 .categoryId(command.categoryId())
-                .closeAt(command.closeAt())
+                .closeAt(command.closeAt());
+
+        if (command.lessonType() == LessonType.STUDY) {
+            lessonBuilder.price(command.price());
+            lessonBuilder.seats(command.seats());
+        }
+
+        return lessonBuilder.build();
+    }
+
+    private List<Stock> createStockEntityForOnedayLesson(Lesson lesson) {
+        return lesson.getAvailableTimeList().stream()
+                .map(at -> Stock.builder()
+                        .id(UUID.randomUUID().toString())
+                        .serviceKey(at.getId())
+                        .quantity(at.getSeats())
+                        .build())
+                .toList();
+    }
+
+    private Stock createStockEntityForStudyLesson(Lesson lesson) {
+        return Stock.builder()
+                .id(UUID.randomUUID().toString())
+                .serviceKey(lesson.getId())
+                .quantity(lesson.getSeats())
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.kosa.fillinv.lesson.entity;
 
 import com.kosa.fillinv.global.entity.BaseEntity;
+import com.kosa.fillinv.global.exception.ResourceException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -49,6 +50,9 @@ public class Lesson extends BaseEntity {
     @Column(name = "price")
     private Integer price;
 
+    @Column(name = "seats")
+    private Integer seats;
+
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<AvailableTime> availableTimeList;
 
@@ -65,7 +69,8 @@ public class Lesson extends BaseEntity {
                   String mentorId,
                   Long categoryId,
                   Instant closeAt,
-                  Integer price) {
+                  Integer price,
+                  Integer seats) {
         this.id = id;
         this.title = title;
         this.lessonType = lessonType;
@@ -76,6 +81,7 @@ public class Lesson extends BaseEntity {
         this.categoryId = categoryId;
         this.closeAt = closeAt;
         this.price = price;
+        this.seats = seats;
         this.availableTimeList = new ArrayList<>();
         this.optionList = new ArrayList<>();
     }
@@ -86,7 +92,7 @@ public class Lesson extends BaseEntity {
     }
 
     public void updateThumbnailImage(String thumbnailImageUrl) {
-        if (thumbnailImageUrl.isBlank()) return;
+        if (thumbnailImageUrl == null || thumbnailImageUrl.isBlank()) return;
         this.thumbnailImage = thumbnailImageUrl;
     }
 
@@ -165,5 +171,15 @@ public class Lesson extends BaseEntity {
 
     public List<Option> getOptionList() {
         return optionList.stream().filter(option -> option.getDeletedAt() == null).toList();
+    }
+
+    public void validateOwnership(String ownerId) {
+        if (!this.mentorId.equals(ownerId)) {
+            throw new ResourceException.AccessDenied("해당 레슨에 대한 권한이 없습니다.");
+        }
+    }
+
+    public void updateMinPrice(int minPrice) {
+        this.price = minPrice;
     }
 }

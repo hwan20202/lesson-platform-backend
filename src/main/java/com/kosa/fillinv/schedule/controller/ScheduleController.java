@@ -2,6 +2,7 @@ package com.kosa.fillinv.schedule.controller;
 
 import com.kosa.fillinv.global.response.SuccessResponse;
 import com.kosa.fillinv.global.security.details.CustomMemberDetails;
+import com.kosa.fillinv.schedule.controller.dto.CreateScheduleResponse;
 import com.kosa.fillinv.schedule.dto.request.ScheduleCreateRequest;
 import com.kosa.fillinv.schedule.dto.request.ScheduleSearchRequest;
 import com.kosa.fillinv.schedule.dto.response.ScheduleDetailResponse;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
@@ -37,7 +39,7 @@ public class ScheduleController {
 
     // 스케쥴 생성
     @PostMapping
-    public ResponseEntity<SuccessResponse<Void>> createSchedule(
+    public ResponseEntity<SuccessResponse<CreateScheduleResponse>> createSchedule(
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
             @RequestBody ScheduleCreateRequest request
     ) {
@@ -58,7 +60,7 @@ public class ScheduleController {
 
         return ResponseEntity
                 .created(location) // Created 응답 시 Body 대신 Location 헤더에 리소스 URI 반환
-                .body(SuccessResponse.success(HttpStatus.CREATED));
+                .body(SuccessResponse.success(HttpStatus.CREATED, new CreateScheduleResponse(scheduleId)));
     }
 
     // 캘린더 / 스케쥴 전체 조회 (GET) - 시간순 정렬 (특정 날짜 위주)
