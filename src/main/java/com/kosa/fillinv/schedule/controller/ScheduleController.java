@@ -132,7 +132,7 @@ public class ScheduleController {
 
     // 캘린더 / 스케쥴 전체 조회 (GET) - 시간순 정렬 (특정 날짜 위주)
     @GetMapping("/calendar")
-    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> searchSchedules(
+    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> calendarSchedules(
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails, // 로그인한 사용자 ID
             @RequestParam Instant start,
             @RequestParam Instant end,
