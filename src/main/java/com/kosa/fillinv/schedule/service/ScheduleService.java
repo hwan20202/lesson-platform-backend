@@ -87,11 +87,13 @@ public class ScheduleService {
     }
 
     // 해당 기간에 포함되는 일정 조회
-    public Page<ScheduleListResponse> calendar(String memberId, Instant start, Instant end) {
+    public Page<ScheduleListResponse> calendar(String memberId, Instant start, Instant end, Integer page, Integer size) {
         ScheduleSearchCondition condition = ScheduleSearchCondition.defaultCondition()
                 .participate(memberId)
                 .between(start, end)
-                .withSortType(ScheduleSortType.START_TIME_ASC);
+                .withSortType(ScheduleSortType.START_TIME_ASC)
+                .withPage(page)
+                .withSize(size);
 
         return search(condition);
     }
@@ -144,7 +146,7 @@ public class ScheduleService {
                             mentor.nickname(),
                             mentee.nickname(),
                             scheduleTime,
-                            memberId.equals(s.getMentorId()) ? "MENTOR" : "MENTEE"
+                            s.getRole(memberId)
                             );
                 }
         );
