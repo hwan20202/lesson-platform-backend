@@ -69,10 +69,13 @@ public class ScheduleController {
     // Ex: GET /api/v1/schedules/1/times/95e3a0e6-e685-4a60-ab63-880031fd4c69
     @GetMapping("/{scheduleId}/times/{scheduleTimeId}")
     public ResponseEntity<SuccessResponse<ScheduleDetailResponse>> getScheduleDetails(
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
             @PathVariable String scheduleId,
             @PathVariable String scheduleTimeId
     ) {
-        ScheduleDetailResponse response = scheduleInquiryService.getScheduleDetail(scheduleId, scheduleTimeId);
+        String memberId = customMemberDetails.memberId();
+
+        ScheduleDetailResponse response = scheduleInquiryService.getScheduleDetail(memberId, scheduleId, scheduleTimeId);
 
         return ResponseEntity
                 .ok(SuccessResponse.success(HttpStatus.OK, response));
@@ -137,14 +140,16 @@ public class ScheduleController {
             @RequestParam Instant start,
             @RequestParam Instant end,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
+            @RequestParam(defaultValue = "1000") Integer size
     ) {
         String memberId = customMemberDetails.memberId();
 
         Page<ScheduleListResponse> responses = scheduleService.calendar(
                 memberId,
                 start,
-                end
+                end,
+                page,
+                size
         );
 
         return ResponseEntity

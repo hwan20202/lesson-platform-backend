@@ -126,4 +126,16 @@ public class Schedule extends BaseEntity {
             throw new ResourceException.AccessDenied("스케쥴에 참여하는 멘티만 접근가능합니다.");
         }
     }
+
+    public String getRole(String memberId) {
+        if (memberId == null || memberId.isBlank()) return "NONE";
+
+        if (memberId.equals(this.menteeId)) {
+            return "MENTEE";
+        } else if (memberId.equals(this.mentorId)) {
+            return "MENTOR";
+        } else {
+            return "NONE";
+        }
+    }
 }

@@ -68,7 +68,7 @@ public class ScheduleInquiryService { // 스케줄 조회 서비스
     }
 
     // 스케쥴 상세 조회
-    public ScheduleDetailResponse getScheduleDetail(String scheduleId, String scheduleTimeId) {
+    public ScheduleDetailResponse getScheduleDetail(String memberId, String scheduleId, String scheduleTimeId) {
         Schedule schedule = validator.getSchedule(scheduleId);
         ScheduleTime scheduleTime = validator.getScheduleTime(scheduleTimeId);
 
@@ -86,8 +86,9 @@ public class ScheduleInquiryService { // 스케줄 조회 서비스
                 schedule,
                 mentorNickname,
                 menteeNickname,
-                scheduleTime.getStartTime(),
-                scheduleTime.getEndTime());
+                scheduleTime,
+                schedule.getRole(memberId)
+        );
     }
 
     // 상태 일치 스케쥴 조회(결제 대기, 승인 대기, 승인, 취소, 완료) / 스케쥴 1개 조회이기 떄문에 페이지 네이션 불필요
