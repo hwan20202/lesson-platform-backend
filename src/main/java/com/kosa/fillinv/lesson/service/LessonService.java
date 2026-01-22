@@ -281,9 +281,12 @@ public class LessonService {
             lessonBuilder.seats(command.seats());
         } else if (command.lessonType() == LessonType.MENTORING) {
             int minPrice = command.optionCommandList().stream()
-                    .map(CreateOptionCommand::price)
-                    .filter(java.util.Objects::nonNull)
-                    .mapToInt(Integer::intValue)
+                    .mapToInt(option -> {
+                        if (option.price() == null) {
+                            throw new ResourceException.InvalidArgument(OPTION_PRICE_INVALID);
+                        }
+                        return option.price();
+                    })
                     .min()
                     .orElseThrow(() -> new ResourceException.InvalidArgument(OPTION_PRICE_INVALID));
             if (minPrice <= 0) {
@@ -292,9 +295,12 @@ public class LessonService {
             lessonBuilder.price(minPrice);
         } else if (command.lessonType() == LessonType.ONEDAY) {
             int minPrice = command.availableTimeCommandList().stream()
-                    .map(CreateAvailableTimeCommand::price)
-                    .filter(java.util.Objects::nonNull)
-                    .mapToInt(Integer::intValue)
+                    .mapToInt(time -> {
+                        if (time.price() == null) {
+                            throw new ResourceException.InvalidArgument(AVAILABLE_TIME_PRICE_INVALID);
+                        }
+                        return time.price();
+                    })
                     .min()
                     .orElseThrow(() -> new ResourceException.InvalidArgument(AVAILABLE_TIME_PRICE_INVALID));
             if (minPrice <= 0) {
