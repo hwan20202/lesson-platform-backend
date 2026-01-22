@@ -2,6 +2,7 @@ package com.kosa.fillinv.schedule.service;
 
 import com.kosa.fillinv.global.exception.BusinessException;
 import com.kosa.fillinv.global.response.ErrorCode;
+import com.kosa.fillinv.lesson.entity.LessonType;
 import com.kosa.fillinv.member.dto.profile.ProfileResponseDto;
 import com.kosa.fillinv.member.service.MemberService;
 import com.kosa.fillinv.schedule.dto.response.ScheduleListResponse;
@@ -14,6 +15,7 @@ import com.kosa.fillinv.schedule.repository.ScheduleTimeRepository;
 import com.kosa.fillinv.schedule.repository.ScheduleTimeSpecifications;
 import com.kosa.fillinv.schedule.service.dto.ScheduleSearchCondition;
 import com.kosa.fillinv.schedule.service.dto.ScheduleSortType;
+import com.kosa.fillinv.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,7 @@ public class ScheduleService {
     private final ScheduleTimeRepository scheduleTimeRepository;
     private final MemberService memberService;
     private final ScheduleValidator validator;
+    private final StockRepository stockRepository;
 
     // 멤버가 멘티 또는 멘토인 예정 스케줄 모두 조회
     public Page<ScheduleListResponse> findAllUpcomingSchedules(String memberId, Instant from) {
@@ -195,6 +198,13 @@ public class ScheduleService {
         }
 
         schedule.updateStatus(ScheduleStatus.CANCELED);
+
+        LessonType type = LessonType.from(schedule.getLessonType());
+        switch (type) {
+            case MENTORING -> stockRepository.increaseQuantity(schedule.getOptionId());
+            case ONEDAY -> stockRepository.increaseQuantity(schedule.getAvailableTimeId());
+            case STUDY -> stockRepository.increaseQuantity(schedule.getId());
+        }
     }
 
     // 해당 레슨 수강이 모두 끝난 경우 (승인 -> 완료)
