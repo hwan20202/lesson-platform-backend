@@ -62,14 +62,6 @@ public class LessonService {
             stockRepository.save(createStockEntityForStudyLesson(saved));
         }
 
-        if (saved.getLessonType() == LessonType.MENTORING) {
-            int minPrice = saved.getOptionList().stream().mapToInt(Option::getPrice).min().orElse(0);
-            saved.updateMinPrice(minPrice);
-        } else if (saved.getLessonType() == LessonType.ONEDAY) {
-            int minPrice = saved.getAvailableTimeList().stream().mapToInt(AvailableTime::getPrice).min().orElse(0);
-            saved.updateMinPrice(minPrice);
-        }
-
         return CreateLessonResult.of(saved);
     }
 
@@ -255,9 +247,20 @@ public class LessonService {
             throw new ResourceException.InvalidArgument(CATEGORY_ID_REQUIRED);
         }
 
+        if (command.availableTimeCommandList() == null || command.availableTimeCommandList().isEmpty()) {
+            throw new ResourceException.InvalidArgument(AVAILABLE_TIME_REQUIRED);
+        }
+
         if (command.lessonType() == LessonType.STUDY) {
             if (command.seats() == null || command.seats() <= 0) {
                 throw new ResourceException.InvalidArgument(INVALID_SEAT);
+            }
+            if (command.price() == null || command.price() <= 0) {
+                throw new ResourceException.InvalidArgument(LESSON_PRICE_INVALID);
+            }
+        } else if (command.lessonType() == LessonType.MENTORING) {
+            if (command.optionCommandList() == null || command.optionCommandList().isEmpty()) {
+                throw new ResourceException.InvalidArgument(OPTION_REQUIRED);
             }
         }
 
@@ -276,6 +279,34 @@ public class LessonService {
         if (command.lessonType() == LessonType.STUDY) {
             lessonBuilder.price(command.price());
             lessonBuilder.seats(command.seats());
+        } else if (command.lessonType() == LessonType.MENTORING) {
+            int minPrice = command.optionCommandList().stream()
+                    .mapToInt(option -> {
+                        if (option.price() == null) {
+                            throw new ResourceException.InvalidArgument(OPTION_PRICE_INVALID);
+                        }
+                        return option.price();
+                    })
+                    .min()
+                    .orElseThrow(() -> new ResourceException.InvalidArgument(OPTION_PRICE_INVALID));
+            if (minPrice <= 0) {
+                throw new ResourceException.InvalidArgument(OPTION_PRICE_INVALID);
+            }
+            lessonBuilder.price(minPrice);
+        } else if (command.lessonType() == LessonType.ONEDAY) {
+            int minPrice = command.availableTimeCommandList().stream()
+                    .mapToInt(time -> {
+                        if (time.price() == null) {
+                            throw new ResourceException.InvalidArgument(AVAILABLE_TIME_PRICE_INVALID);
+                        }
+                        return time.price();
+                    })
+                    .min()
+                    .orElseThrow(() -> new ResourceException.InvalidArgument(AVAILABLE_TIME_PRICE_INVALID));
+            if (minPrice <= 0) {
+                throw new ResourceException.InvalidArgument(AVAILABLE_TIME_PRICE_INVALID);
+            }
+            lessonBuilder.price(minPrice);
         }
 
         return lessonBuilder.build();
