@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("local")
-class TossPaymentClientTest {
+class TossPaymentClientRetryTest {
 
     @MockitoBean
     private RestClient tossRestClient;
