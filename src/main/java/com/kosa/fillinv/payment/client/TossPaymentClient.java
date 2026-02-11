@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosa.fillinv.payment.client.dto.*;
 import com.kosa.fillinv.payment.client.dto.TossPaymentConfirmRequest;
 import com.kosa.fillinv.payment.domain.*;
+import com.kosa.fillinv.payment.service.dto.PaymentRefundCommand;
 import com.kosa.fillinv.payment.service.dto.PaymentConfirmCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,9 @@ public class TossPaymentClient {
 
     private final String uri = "/v1/payments/confirm";
     private static final int MAX_RETRY_COUNT = 2;
+    public RefundExecutionResult cancel(PaymentRefundCommand command) {
+        return null;
+    }
 
     public PaymentExecutionResult confirm(PaymentConfirmCommand command) {
         int attempt = 0;
