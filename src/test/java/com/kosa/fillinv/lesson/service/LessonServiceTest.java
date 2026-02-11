@@ -175,6 +175,7 @@ class LessonServiceTest {
                 "수정된 설명",
                 "부산",
                 1L,
+                null,
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).plus(7, ChronoUnit.DAYS)
         );
 
