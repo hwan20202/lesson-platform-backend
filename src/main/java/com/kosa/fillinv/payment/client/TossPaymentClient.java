@@ -23,6 +23,10 @@ public class TossPaymentClient {
     private final String uri = "/v1/payments/confirm";
     private static final int MAX_RETRY_COUNT = 2;
 
+    public RefundExecutionResult cancel(PaymentCancelCommand command) {
+        return null;
+    }
+
     public PaymentExecutionResult confirm(PaymentConfirmCommand command) {
         int attempt = 0;
 
@@ -107,4 +111,5 @@ public class TossPaymentClient {
             throw new IllegalStateException(ie);
         }
     }
+
 }
