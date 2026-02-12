@@ -34,7 +34,7 @@ public class TossPaymentClient {
                                 .uri(uriBuilder ->
                                         uriBuilder
                                                 .path("/v1/payments/{paymentKey}/cancel")
-                                                .build(command.paymentKey()))
+                                                .build(command.paymentKey())) // paymentKey를 멱등키로 사용하여 결제 한건당 하나의 취소요청만 처리됨
                                 .header("Idempotency-Key", command.paymentKey())
                                 .body(new TossPaymentCancelRequest(
                                         command.cancelReason(),
