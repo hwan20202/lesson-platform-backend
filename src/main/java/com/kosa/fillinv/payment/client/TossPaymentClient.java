@@ -22,7 +22,8 @@ public class TossPaymentClient {
     private static final int MAX_RETRY_COUNT = 2;
     private final RestClient tossRestClient;
     private final ObjectMapper objectMapper;
-    private final String uri = "/v1/payments/confirm";
+    private final String CONFIRM_URI = "/v1/payments/confirm";
+    private final String CANCEL_URI = "/v1/payments/{paymentKey}/cancel";
 
     public RefundExecutionResult cancel(PaymentRefundCommand command) {
         int attempt = 0;
@@ -33,7 +34,7 @@ public class TossPaymentClient {
                         tossRestClient.post()
                                 .uri(uriBuilder ->
                                         uriBuilder
-                                                .path("/v1/payments/{paymentKey}/cancel")
+                                                .path(CANCEL_URI)
                                                 .build(command.paymentKey())) // paymentKey를 멱등키로 사용하여 결제 한건당 하나의 취소요청만 처리됨
                                 .header("Idempotency-Key", command.paymentKey())
                                 .body(new TossPaymentCancelRequest(
@@ -72,7 +73,7 @@ public class TossPaymentClient {
             try {
                 TossPaymentConfirmationResponse response =
                         tossRestClient.post()
-                                .uri(uri)
+                                .uri(CONFIRM_URI)
                                 .header("Idempotency-Key", command.orderId())
                                 .body(new TossPaymentConfirmRequest(
                                         command.paymentKey(),
