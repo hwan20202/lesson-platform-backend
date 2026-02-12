@@ -129,7 +129,16 @@ public class TossPaymentClient {
         TossPaymentConfirmationResponse.Cancel cancelEvent =
                 response.cancels().stream()
                         .max(Comparator.comparing(TossPaymentConfirmationResponse.Cancel::canceledAt))
-                        .orElseThrow(); // 결제 취소가 성공한 경우 최소 1개 이상의 cancel 데이터가 존재하야함
+                        .orElseThrow(
+                                () -> PSPConfirmationException.builder()
+                                        .errorCode("400")
+                                        .errorMessage("성공한 취소 요청에 취소 정보가 존재하지 않음")
+                                        .isSuccess(false)
+                                        .isFailure(false)
+                                        .isUnknown(true)
+                                        .isRetryable(true)
+                                        .build()
+                        ); // 결제 취소가 성공한 경우 최소 1개 이상의 cancel 데이터가 존재하야함
 
         return new RefundExecutionResult(
                 response.paymentKey(),
