@@ -124,7 +124,7 @@ public class TossPaymentClient {
 
     private static RefundExecutionResult getRefundExecutionResult(TossPaymentConfirmationResponse response) {
 
-        // 하나의 결제 이벤트에 대해서 여러 취소 이벤트가 있을 수 있기 떄문에 리스트 형태
+        // 하나의 결제 이벤트에 대해서 여러 취소 이벤트가 있을 수 있기 때문에 리스트 형태
         // 가장 최신의 데이터를 선택
         TossPaymentConfirmationResponse.Cancel cancelEvent =
                 response.cancels().stream()
