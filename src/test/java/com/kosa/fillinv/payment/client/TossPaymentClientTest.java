@@ -1,7 +1,7 @@
 package com.kosa.fillinv.payment.client;
 
+import com.kosa.fillinv.payment.client.dto.PaymentCancelCommand;
 import com.kosa.fillinv.payment.domain.RefundExecutionResult;
-import com.kosa.fillinv.payment.service.dto.PaymentRefundCommand;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,11 @@ class TossPaymentClientTest {
         // given
         String paymentKey = "payment-key";
         String refundReason = "refund-reason";
+        String orderId = "order-001";
         Integer refundAmount = 1000;
 
         // when
-        RefundExecutionResult result =  tossPaymentClient.cancel(new PaymentRefundCommand(paymentKey, refundReason, refundAmount));
+        RefundExecutionResult result =  tossPaymentClient.cancel(new PaymentCancelCommand(paymentKey, orderId, refundReason, refundAmount));
 
         // then
         assertThat(result.paymentKey()).isEqualTo(paymentKey);
