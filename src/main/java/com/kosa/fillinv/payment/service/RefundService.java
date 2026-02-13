@@ -60,7 +60,7 @@ public class RefundService {
         PaymentFailure failure;
 
         if (e instanceof PSPConfirmationException) {
-            status = RefundStatus.fromName(((PSPConfirmationException) e).paymentStatus().name());
+            status = ((PSPConfirmationException) e).refundStatus();
             failure = new PaymentFailure(((PSPConfirmationException) e).getErrorCode(), e.getMessage());
         } else if (e instanceof SQLException) { // Todo TOSS confirm api는 성공하고 내부 서버에서 상태 저장에 실패한 경우 (PaymentStatus.EXECUTING) 별도 처리 필요
             status = RefundStatus.UNKNOWN;
