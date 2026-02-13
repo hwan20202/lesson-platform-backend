@@ -64,13 +64,13 @@ public class RefundService {
             failure = new PaymentFailure(((PSPConfirmationException) e).getErrorCode(), e.getMessage());
         } else if (e instanceof SQLException) { // Todo TOSS confirm api는 성공하고 내부 서버에서 상태 저장에 실패한 경우 (PaymentStatus.EXECUTING) 별도 처리 필요
             status = RefundStatus.UNKNOWN;
-            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage());
+            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "환불 실행 도중 데이터베이스 관련 오류 발생" : e.getMessage());
         } else if (e instanceof ResourceAccessException) { // time out or network
             status = RefundStatus.UNKNOWN;
-            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage());
+            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "환불 실행 도중 외부 연결 오류 발생" : e.getMessage());
         } else {
             status = RefundStatus.FAILURE;
-            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage());
+            failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "환불 실행 도중 알 수 없는 오류 발생" : e.getMessage());
         }
 
         refundCommandService.updateStatus(
