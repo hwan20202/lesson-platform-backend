@@ -138,17 +138,6 @@ class RefundServiceTest {
                 cmd.status() == RefundStatus.UNKNOWN));
     }
 
-    @Test
-    @DisplayName("Refund 객체의 상태가 업데이트되면 RefundHistory가 생성된다.")
-    void createRefundHistory_whenRefundStatusUpdated() {
-
-    }
-
-    @Test
-    @DisplayName("결제 취소가 성공하면 스케쥴의 상태가 취소로 변경된다")
-    void updateScheduleStatusToCanceled_whenRefundSuccess() {
-
-    }
 
     private PSPConfirmationException mockPSPConfirmationExceptionUnknown() {
         return PSPConfirmationException.builder()
@@ -176,7 +165,7 @@ class RefundServiceTest {
         return new RefundExecutionResult(
                 "paymentKey",
                 "orderId",
-                new RefundExtraDetails()
+                mock(RefundExtraDetails.class)
         );
     }
 
