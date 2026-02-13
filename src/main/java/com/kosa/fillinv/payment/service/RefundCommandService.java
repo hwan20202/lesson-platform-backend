@@ -80,10 +80,11 @@ public class RefundCommandService {
         RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.SUCCESS, "PAYMENT_CANCELATION_DONE");
         refundHistoryRepository.save(refundHistory);
 
-        refund.markSuccess();
-        refund.setTransactionKey(command.extraDetails().transactionKey());
-        refund.setRefundedAt(command.extraDetails().refundedAt());
-        refund.setPspRaw(command.extraDetails().pspRawData());
+        refund.markSuccess(
+                command.extraDetails().transactionKey(),
+                command.extraDetails().refundedAt(),
+                command.extraDetails().pspRawData()
+        );
     }
 
     private void execute(RefundStatusUpdateCommand command) {

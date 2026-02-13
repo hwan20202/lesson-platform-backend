@@ -81,11 +81,14 @@ public class Refund {
                 "EXECUTING 상태로 변경할 수 없습니다. 현재 상태: " + refundStatus);
     }
 
-    public void markSuccess() {
+    public void markSuccess(String transactionKey, Instant refundedAt, String pspRaw) {
         if (refundStatus == RefundStatus.EXECUTING ||
                 refundStatus == RefundStatus.UNKNOWN) {
 
-            refundStatus = RefundStatus.SUCCESS;
+            this.refundStatus = RefundStatus.SUCCESS;
+            this.transactionKey = transactionKey;
+            this.refundedAt = refundedAt;
+            this.pspRaw = pspRaw;
             return;
         }
 
