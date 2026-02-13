@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosa.fillinv.payment.client.dto.*;
 import com.kosa.fillinv.payment.client.dto.TossPaymentConfirmRequest;
 import com.kosa.fillinv.payment.domain.*;
-import com.kosa.fillinv.payment.service.dto.PaymentRefundCommand;
 import com.kosa.fillinv.payment.service.dto.PaymentConfirmCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,7 @@ public class TossPaymentClient {
     private final String CONFIRM_URI = "/v1/payments/confirm";
     private final String CANCEL_URI = "/v1/payments/{paymentKey}/cancel";
 
-    public RefundExecutionResult cancel(PaymentRefundCommand command) {
+    public RefundExecutionResult cancel(PaymentCancelCommand command) {
         int attempt = 0;
 
         while (true) {
@@ -64,10 +63,6 @@ public class TossPaymentClient {
                 backoff(attempt);
             }
         }
-    }
-
-    public RefundExecutionResult cancel(PaymentCancelCommand command) {
-        return null;
     }
 
     public PaymentExecutionResult confirm(PaymentConfirmCommand command) {
