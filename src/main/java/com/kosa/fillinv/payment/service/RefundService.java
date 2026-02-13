@@ -75,7 +75,7 @@ public class RefundService {
 
         refundCommandService.updateStatus(
                 new RefundStatusUpdateCommand(
-                        refundDTO.paymentId(),
+                        refundDTO.refundId(),
                         status,
                         null,
                         failure
