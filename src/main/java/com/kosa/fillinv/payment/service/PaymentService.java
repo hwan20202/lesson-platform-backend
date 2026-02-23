@@ -15,7 +15,7 @@ import com.kosa.fillinv.payment.service.dto.PaymentConfirmResult;
 import com.kosa.fillinv.payment.service.dto.PaymentStatusUpdateCommand;
 import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.repository.ScheduleRepository;
-import com.kosa.fillinv.schedule.service.ScheduleService;
+import com.kosa.fillinv.schedule.service.ScheduleCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ public class PaymentService {
     private final TossPaymentClient tossPaymentClient;
     private final PaymentRepository paymentRepository;
     private final ScheduleRepository scheduleRepository;
-    private final ScheduleService scheduleService;
+    private final ScheduleCommandService scheduleCommandService;
 
     /*
      * 스케쥴에 대한 Payment 객체를 생성 및 데이터베이스에 저장
@@ -95,7 +95,7 @@ public class PaymentService {
             );
 
             // Todo TOSS confirm api는 성공하고 결제 상태 변경은 성공했으나 ScheduleStatus 변경에 실패한 경우 별도 처리 필요
-            scheduleService.completePayment(command.orderId());
+            scheduleCommandService.completePayment(command.orderId());
 
             return new PaymentConfirmResult(
                     PaymentStatus.SUCCESS,
