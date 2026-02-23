@@ -15,9 +15,7 @@ import com.kosa.fillinv.schedule.service.ScheduleService;
 import com.kosa.fillinv.schedule.service.dto.ScheduleSearchCondition;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -188,42 +186,4 @@ public class ScheduleController {
 
         return ResponseEntity.ok(SuccessResponse.success(HttpStatus.OK));
     }
-
-
-    // 상태 일치 스케쥴 조회
-    // Ex: GET /api/v1/schedules/1/status/PAYMENT_PENDING
-    @GetMapping("/{scheduleId}/status/{status}")
-    public ResponseEntity<SuccessResponse<ScheduleListResponse>> getScheduleByStatus(
-            @PathVariable String scheduleId,
-            @PathVariable ScheduleStatus status
-    ) {
-        ScheduleListResponse response = scheduleInquiryService.getScheduleByStatus(scheduleId, status);
-
-        return ResponseEntity
-                .ok(SuccessResponse.success(HttpStatus.OK, response));
-    }
-
-    // 멘티 모드: 내 수강 신청 목록 조회 (페이지네이션)
-    // Ex: GET /api/v1/schedules/mentee/12?page=0&size=10
-    @GetMapping("/mentee/{memberId}") // role=MENTOR or role=MENTEE
-    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getMenteeSchedules(
-            @PathVariable String memberId,
-            // 기본 10개씩, 생성일자 기준 내림차순(최신순)
-            @ParameterObject Pageable pageable
-    ) {
-        Page<ScheduleListResponse> responses = scheduleInquiryService.getMenteeSchedules(memberId, pageable);
-        return ResponseEntity.ok(SuccessResponse.success(HttpStatus.OK, responses));
-    }
-
-    // 멘토 모드: 내 수업 일정 목록 조회 (페이지네이션)
-    // Ex: GET /api/v1/schedules/mentor/11?page=0&size=10
-    @GetMapping("/mentor/{memberId}") // role=MENTOR or role=MENTEE
-    public ResponseEntity<SuccessResponse<Page<ScheduleListResponse>>> getMentorSchedules(
-            @PathVariable String memberId,
-            @ParameterObject Pageable pageable
-    ) {
-        Page<ScheduleListResponse> responses = scheduleInquiryService.getMentorSchedules(memberId, pageable);
-        return ResponseEntity.ok(SuccessResponse.success(HttpStatus.OK, responses));
-    }
-
 }

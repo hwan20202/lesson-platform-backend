@@ -10,7 +10,6 @@ import com.kosa.fillinv.schedule.entity.Schedule;
 import com.kosa.fillinv.schedule.entity.ScheduleStatus;
 import com.kosa.fillinv.schedule.entity.ScheduleTime;
 import com.kosa.fillinv.schedule.repository.ScheduleParticipantRole;
-import com.kosa.fillinv.schedule.repository.ScheduleRepository;
 import com.kosa.fillinv.schedule.repository.ScheduleTimeRepository;
 import com.kosa.fillinv.schedule.repository.ScheduleTimeSpecifications;
 import com.kosa.fillinv.schedule.service.dto.ScheduleSearchCondition;
@@ -35,20 +34,10 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ScheduleService {
 
-    private final ScheduleRepository scheduleRepository;
     private final ScheduleTimeRepository scheduleTimeRepository;
     private final MemberService memberService;
     private final ScheduleValidator validator;
     private final StockRepository stockRepository;
-
-    // 멤버가 멘티 또는 멘토인 예정 스케줄 모두 조회
-    public Page<ScheduleListResponse> findAllUpcomingSchedules(String memberId, Instant from) {
-        ScheduleSearchCondition intended = ScheduleSearchCondition.defaultCondition()
-                .participate(memberId)
-                .toIntended(from);
-
-        return search(intended);
-    }
 
     // 멤버가 멘티 또는 멘토인 과거 스케줄 검색
     public Page<ScheduleListResponse> searchPastSchedules(String memberId, ScheduleSearchCondition condition) {
@@ -64,27 +53,6 @@ public class ScheduleService {
         ScheduleSearchCondition intended = condition
                 .participate(memberId)
                 .toIntended(condition.from());
-
-        return search(intended);
-    }
-
-    // 멤버가 멘티이면서 승인대기 중인 예정 스케쥴 검색
-    public Page<ScheduleListResponse> findAllUpcomingApprovalPendingSchedulesAsMentee(String memberId, Instant from) {
-        ScheduleSearchCondition intended =
-                ScheduleSearchCondition.defaultCondition()
-                .mentee(memberId)
-                .withStatus(ScheduleStatus.APPROVAL_PENDING)
-                .toIntended(from);
-
-        return search(intended);
-    }
-
-    // 멤버가 멘토이면서 승인대기 중인 예정 스케쥴 검색
-    public Page<ScheduleListResponse> findAllUpcomingApprovalPendingSchedulesAsMentor(String memberId, Instant from) {
-        ScheduleSearchCondition intended = ScheduleSearchCondition.defaultCondition()
-                .mentor(memberId)
-                .withStatus(ScheduleStatus.APPROVAL_PENDING)
-                .toIntended(from);
 
         return search(intended);
     }
