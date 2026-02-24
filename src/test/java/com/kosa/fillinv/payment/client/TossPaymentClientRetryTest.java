@@ -1,6 +1,7 @@
 package com.kosa.fillinv.payment.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kosa.fillinv.payment.client.dto.PaymentCancelCommand;
 import com.kosa.fillinv.payment.client.dto.TossPaymentCancelRequest;
 import com.kosa.fillinv.payment.client.dto.TossPaymentConfirmRequest;
 import com.kosa.fillinv.payment.domain.PSPConfirmationException;
@@ -92,8 +93,8 @@ class TossPaymentClientRetryTest {
     @DisplayName("TOSS cancel 과정에서 재시도 가능한 실패의 경우 backoff 전략이 실행된다")
     void refund_retryable_error_should_retry_and_call_post_three_times() {
         // given
-        PaymentRefundCommand command =
-                new PaymentRefundCommand("paymentKey", "단순변심", 1000);
+        PaymentCancelCommand command =
+                new PaymentCancelCommand("paymentKey", "orderId", "단순변심", 1000);
 
         // onStatus에서 항상 retryable 예외 발생시키기
         when(responseSpec.onStatus(any(), any()))
