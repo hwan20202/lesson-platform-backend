@@ -3,6 +3,7 @@ package com.kosa.fillinv.payment.service;
 import com.kosa.fillinv.global.exception.ResourceException;
 import com.kosa.fillinv.payment.domain.PaymentFailure;
 import com.kosa.fillinv.payment.domain.RefundExtraDetails;
+import com.kosa.fillinv.payment.domain.RefundRetryPolicy;
 import com.kosa.fillinv.payment.entity.Payment;
 import com.kosa.fillinv.payment.entity.Refund;
 import com.kosa.fillinv.payment.entity.RefundHistory;
@@ -24,7 +25,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ActiveProfiles("local")
 @Transactional
-class RefundCommandServiceTest {
+class RefundServiceTest {
 
     @Autowired
     private RefundCommandService refundCommandService;
@@ -109,7 +109,7 @@ class RefundCommandServiceTest {
     }
 
     @Test
-    @DisplayName("결제 상태를 결제 진행중으로 변경한다.")
+    @DisplayName("결제 취소 상태를 결제 진행중으로 변경한다.")
     void updateStatusToExecuting() {
         // given
         String refundId = "refund-001";
@@ -126,17 +126,11 @@ class RefundCommandServiceTest {
                         .refundReason("refund reason")
                         .build()
         );
+
         entityManager.flush(); entityManager.clear();
 
-        RefundStatusUpdateCommand command = new RefundStatusUpdateCommand(
-                refundId,
-                RefundStatus.EXECUTING,
-                null,
-                null
-        );
-
         // when
-        refundCommandService.updateStatus(command);
+        refundCommandService.execute(refundId, new RefundRetryPolicy());
         entityManager.flush(); entityManager.clear();
 
         // then
@@ -176,21 +170,16 @@ class RefundCommandServiceTest {
         );
         entityManager.flush(); entityManager.clear();
 
-        RefundStatusUpdateCommand command = new RefundStatusUpdateCommand(
-                refundId,
-                RefundStatus.SUCCESS,
-                new RefundExtraDetails(
-                        refundedAt,
-                        refundAmount,
-                        refundReason,
-                        transactionKey,
-                        pspRaw
-                ),
-                null
-        );
-
         // when
-        refundCommandService.updateStatus(command);
+        refundCommandService.success(
+                refundId,
+                new RefundExtraDetails(
+                    refundedAt,
+                    refundAmount,
+                    refundReason,
+                    transactionKey,
+                    pspRaw
+                ));
         entityManager.flush(); entityManager.clear();
 
         // then
@@ -232,15 +221,8 @@ class RefundCommandServiceTest {
         );
         entityManager.flush(); entityManager.clear();
 
-        RefundStatusUpdateCommand command = new RefundStatusUpdateCommand(
-                refundId,
-                RefundStatus.FAILURE,
-                null,
-                failure
-        );
-
         // when
-        refundCommandService.updateStatus(command);
+        refundCommandService.fail(refundId, failure);
         entityManager.flush(); entityManager.clear();
 
         // then
@@ -279,15 +261,8 @@ class RefundCommandServiceTest {
         );
         entityManager.flush(); entityManager.clear();
 
-        RefundStatusUpdateCommand command = new RefundStatusUpdateCommand(
-                refundId,
-                RefundStatus.UNKNOWN,
-                null,
-                failure
-        );
-
         // when
-        refundCommandService.updateStatus(command);
+        refundCommandService.unknown(refundId, failure);
         entityManager.flush(); entityManager.clear();
 
         // then

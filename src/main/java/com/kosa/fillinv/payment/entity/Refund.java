@@ -1,5 +1,6 @@
 package com.kosa.fillinv.payment.entity;
 
+import com.kosa.fillinv.payment.domain.RefundRetryPolicy;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,6 +48,15 @@ public class Refund {
     @Column(name = "psp_raw")
     private String pspRaw;
 
+    @Column(name = "retry_count")
+    private int retryCount;
+
+    @Column(name = "next_attempt_at")
+    private Instant nextAttemptAt;
+
+    @Column(name = "last_retry_at")
+    private Instant lastRetryAt;
+
     @Builder
     public Refund(String id,
                   String paymentId,
@@ -62,6 +72,7 @@ public class Refund {
         this.refundStatus = refundStatus;
         this.refundAmount = refundAmount;
         this.refundReason = refundReason;
+        this.retryCount = 0;
     }
 
     @PrePersist
@@ -69,11 +80,14 @@ public class Refund {
         this.createdAt = Instant.now();
     }
 
-    public void markExecuting() {
+    public void markExecuting(RefundRetryPolicy retryPolicy) {
         if (refundStatus == RefundStatus.NOT_STARTED ||
                 refundStatus == RefundStatus.UNKNOWN) {
 
             refundStatus = RefundStatus.EXECUTING;
+            lastRetryAt = Instant.now();
+            this.nextAttemptAt = retryPolicy.calculateNextAttemptAt(this, lastRetryAt);
+            retryCount++;
             return;
         }
 

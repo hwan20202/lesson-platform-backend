@@ -93,9 +93,7 @@ class RefundServiceTest {
 
         InOrder inOrder = inOrder(refundCommandService, tossPaymentClient);
 
-        inOrder.verify(refundCommandService)
-                .updateStatus(argThat(cmd ->
-                        cmd.status() == RefundStatus.EXECUTING));
+        inOrder.verify(refundCommandService).execute(refund.getId(), any());
 
         inOrder.verify(tossPaymentClient)
                 .cancel(any(PaymentCancelCommand.class));
@@ -115,8 +113,7 @@ class RefundServiceTest {
 
         refundService.executeRefund(refund.getId());
 
-        verify(refundCommandService).updateStatus(argThat(cmd ->
-                cmd.status() == RefundStatus.SUCCESS));
+        verify(refundCommandService).success(refund.getId(), any());
     }
 
     @Test
@@ -131,8 +128,7 @@ class RefundServiceTest {
 
         refundService.executeRefund(refund.getId());
 
-        verify(refundCommandService).updateStatus(argThat(cmd ->
-                cmd.status() == RefundStatus.FAILURE));
+        verify(refundCommandService).fail(refund.getId(), any());
     }
 
     @Test
@@ -147,8 +143,7 @@ class RefundServiceTest {
 
         refundService.executeRefund(refund.getId());
 
-        verify(refundCommandService).updateStatus(argThat(cmd ->
-                cmd.status() == RefundStatus.UNKNOWN));
+        verify(refundCommandService).unknown(refund.getId(), any());
     }
 
     private RefundDTO mockReturnDTO() {

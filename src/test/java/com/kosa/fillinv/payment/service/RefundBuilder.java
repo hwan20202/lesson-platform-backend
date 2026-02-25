@@ -1,5 +1,6 @@
 package com.kosa.fillinv.payment.service;
 
+import com.kosa.fillinv.payment.domain.RefundRetryPolicy;
 import com.kosa.fillinv.payment.entity.Refund;
 import com.kosa.fillinv.payment.entity.RefundStatus;
 import java.time.Instant;
@@ -17,6 +18,8 @@ public class RefundBuilder {
     private Instant refundedAt;
     private Instant createdAt;
     private String pspRaw;
+
+    private RefundRetryPolicy retryPolicy = new RefundRetryPolicy();
 
     public RefundBuilder(RefundStatus refundStatus) {
         switch (refundStatus) {
@@ -122,7 +125,7 @@ public class RefundBuilder {
                 .build();
 
         if (refundStatus == RefundStatus.EXECUTING) {
-            refund.markExecuting();
+            refund.markExecuting(retryPolicy);
         } else if (refundStatus == RefundStatus.SUCCESS) {
             refund.markSuccess(transactionKey, refundedAt, pspRaw);
         } else if (refundStatus == RefundStatus.FAILURE) {

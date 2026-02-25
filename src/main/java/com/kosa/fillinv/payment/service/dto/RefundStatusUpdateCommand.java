@@ -4,6 +4,8 @@ import com.kosa.fillinv.payment.domain.PaymentFailure;
 import com.kosa.fillinv.payment.domain.RefundExtraDetails;
 import com.kosa.fillinv.payment.entity.RefundStatus;
 
+import java.time.Instant;
+
 public record RefundStatusUpdateCommand(
         String refundId,
         RefundStatus status,

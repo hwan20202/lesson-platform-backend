@@ -5,16 +5,18 @@ import com.kosa.fillinv.payment.client.dto.PaymentCancelCommand;
 import com.kosa.fillinv.payment.domain.PSPConfirmationException;
 import com.kosa.fillinv.payment.domain.PaymentFailure;
 import com.kosa.fillinv.payment.domain.RefundExecutionResult;
+import com.kosa.fillinv.payment.domain.RefundRetryPolicy;
 import com.kosa.fillinv.payment.entity.Refund;
 import com.kosa.fillinv.payment.entity.RefundStatus;
 import com.kosa.fillinv.payment.repository.RefundRepository;
 import com.kosa.fillinv.payment.service.dto.PaymentRefundResult;
-import com.kosa.fillinv.payment.service.dto.RefundStatusUpdateCommand;
+import com.kosa.fillinv.payment.service.dto.RefundDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class RefundService {
     private final RefundRepository refundRepository;
     private final RefundCommandService refundCommandService;
     private final TossPaymentClient tossPaymentClient;
+    private final RefundRetryPolicy refundRetryPolicy;
 
     public PaymentRefundResult executeRefund(String refundId) {
 
@@ -30,27 +33,13 @@ public class RefundService {
                 .orElseThrow();
 
         try {
-            refundCommandService.updateStatus(
-                    new RefundStatusUpdateCommand(
-                            refund.getId(),
-                            RefundStatus.EXECUTING,
-                            null,
-                            null
-                    )
-            );
+            refundCommandService.execute(refund.getId(), refundRetryPolicy);
 
             RefundExecutionResult result = tossPaymentClient.cancel(
                     new PaymentCancelCommand(refund.getPaymentKey(),
                             refund.getOrderId(), refund.getRefundReason(), refund.getRefundAmount()));
 
-            refundCommandService.updateStatus(
-                    new RefundStatusUpdateCommand(
-                            refund.getId(),
-                            RefundStatus.SUCCESS,
-                            result.refundExtraDetails(),
-                            null
-                    )
-            );
+            refundCommandService.success(refund.getId(), result.refundExtraDetails());
 
             return new PaymentRefundResult(RefundStatus.SUCCESS, null);
         } catch (Exception e) {
@@ -76,15 +65,21 @@ public class RefundService {
             failure = new PaymentFailure(e.getClass().getSimpleName(), e.getMessage() == null ? "환불 실행 도중 알 수 없는 오류 발생" : e.getMessage());
         }
 
-        refundCommandService.updateStatus(
-                new RefundStatusUpdateCommand(
-                        refund.getId(),
-                        status,
-                        null,
-                        failure
-                )
-        );
+        if (status == RefundStatus.FAILURE) {
+            refundCommandService.fail(refund.getId(), failure);
+        } else {
+            refundCommandService.unknown(refund.getId(), failure);
+        }
 
         return new PaymentRefundResult(status, failure);
+    }
+
+    public List<RefundDTO> getPendingRefundRequest() {
+
+        // RefundStatus가 Failure, Unknown, Executing
+        // nextRetryAt > now && retryCount <= MAX_RETRY_COUNT
+        // 만역 Executing일 경우 충분한 시간이 지나여함
+
+        return null;
     }
 }

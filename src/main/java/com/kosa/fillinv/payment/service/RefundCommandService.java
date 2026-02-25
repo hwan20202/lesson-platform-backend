@@ -1,6 +1,9 @@
 package com.kosa.fillinv.payment.service;
 
 import com.kosa.fillinv.global.exception.ResourceException;
+import com.kosa.fillinv.payment.domain.PaymentFailure;
+import com.kosa.fillinv.payment.domain.RefundExtraDetails;
+import com.kosa.fillinv.payment.domain.RefundRetryPolicy;
 import com.kosa.fillinv.payment.entity.*;
 import com.kosa.fillinv.payment.repository.PaymentRepository;
 import com.kosa.fillinv.payment.repository.RefundHistoryRepository;
@@ -43,58 +46,51 @@ public class RefundCommandService {
     }
 
     @Transactional
-    public void updateStatus(RefundStatusUpdateCommand command) {
-        switch (command.status()) {
-            case EXECUTING -> execute(command);
-            case SUCCESS -> success(command);
-            case FAILURE -> fail(command);
-            case UNKNOWN -> unknown(command);
-            default -> throw new IllegalArgumentException("Unknown status: " + command.status());
-        }
-    }
-
-    private void unknown(RefundStatusUpdateCommand command) {
-        Refund refund = refundRepository.findById(command.refundId())
+    public void execute(String refundId, RefundRetryPolicy retryPolicy) {
+        Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new ResourceException.NotFound("환불 정보 없음"));
 
-        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.UNKNOWN, command.failure() == null ? null : command.failure().toString());
+        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.EXECUTING, "PAYMENT_CANCELATION_START");
         refundHistoryRepository.save(refundHistory);
 
-        refund.markUnknown();
+        refund.markExecuting(retryPolicy);
     }
 
-    private void fail(RefundStatusUpdateCommand command) {
-        Refund refund = refundRepository.findById(command.refundId())
-                .orElseThrow(() -> new ResourceException.NotFound("환불 정보 없음"));
-
-        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.FAILURE, command.failure() == null ? null : command.failure().toString());
-        refundHistoryRepository.save(refundHistory);
-
-        refund.markFail();
-    }
-
-    private void success(RefundStatusUpdateCommand command) {
-        Refund refund = refundRepository.findById(command.refundId())
+    @Transactional
+    public void success(String refundId, RefundExtraDetails extraDetails) {
+        Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new ResourceException.NotFound("환불 정보 없음"));
 
         RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.SUCCESS, "PAYMENT_CANCELATION_DONE");
         refundHistoryRepository.save(refundHistory);
 
         refund.markSuccess(
-                command.extraDetails().transactionKey(),
-                command.extraDetails().refundedAt(),
-                command.extraDetails().pspRawData()
+                extraDetails.transactionKey(),
+                extraDetails.refundedAt(),
+                extraDetails.pspRawData()
         );
     }
 
-    private void execute(RefundStatusUpdateCommand command) {
-        Refund refund = refundRepository.findById(command.refundId())
+    @Transactional
+    public void fail(String refundId, PaymentFailure failure) {
+        Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new ResourceException.NotFound("환불 정보 없음"));
 
-        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.EXECUTING, "PAYMENT_CANCELATION_START");
+        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.FAILURE, failure == null ? null : failure.toString());
         refundHistoryRepository.save(refundHistory);
 
-        refund.markExecuting();
+        refund.markFail();
+    }
+
+    @Transactional
+    public void unknown(String refundId, PaymentFailure failure) {
+        Refund refund = refundRepository.findById(refundId)
+                .orElseThrow(() -> new ResourceException.NotFound("환불 정보 없음"));
+
+        RefundHistory refundHistory = createRefundHistory(refund, RefundStatus.UNKNOWN, failure == null ? null : failure.toString());
+        refundHistoryRepository.save(refundHistory);
+
+        refund.markUnknown();
     }
 
     private RefundHistory createRefundHistory(Refund refund, RefundStatus newStatus, String reason) {
