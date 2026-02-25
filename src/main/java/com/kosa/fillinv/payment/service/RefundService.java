@@ -5,10 +5,10 @@ import com.kosa.fillinv.payment.client.dto.PaymentCancelCommand;
 import com.kosa.fillinv.payment.domain.PSPConfirmationException;
 import com.kosa.fillinv.payment.domain.PaymentFailure;
 import com.kosa.fillinv.payment.domain.RefundExecutionResult;
+import com.kosa.fillinv.payment.entity.Refund;
 import com.kosa.fillinv.payment.entity.RefundStatus;
-import com.kosa.fillinv.payment.service.dto.PaymentRefundCommand;
+import com.kosa.fillinv.payment.repository.RefundRepository;
 import com.kosa.fillinv.payment.service.dto.PaymentRefundResult;
-import com.kosa.fillinv.payment.service.dto.RefundDTO;
 import com.kosa.fillinv.payment.service.dto.RefundStatusUpdateCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,17 +20,19 @@ import java.sql.SQLException;
 @RequiredArgsConstructor
 public class RefundService {
 
+    private final RefundRepository refundRepository;
     private final RefundCommandService refundCommandService;
     private final TossPaymentClient tossPaymentClient;
 
-    public PaymentRefundResult refund(PaymentRefundCommand command) {
+    public PaymentRefundResult executeRefund(String refundId) {
 
-        RefundDTO refund = refundCommandService.createRefund(PaymentRefundCommand.toRefundCreateCommand(command));
+        Refund refund = refundRepository.findById(refundId)
+                .orElseThrow();
 
         try {
             refundCommandService.updateStatus(
                     new RefundStatusUpdateCommand(
-                            refund.refundId(),
+                            refund.getId(),
                             RefundStatus.EXECUTING,
                             null,
                             null
@@ -38,11 +40,12 @@ public class RefundService {
             );
 
             RefundExecutionResult result = tossPaymentClient.cancel(
-                    new PaymentCancelCommand(refund.paymentKey(), refund.orderId(), refund.refundReason(), refund.refundAmount()));
+                    new PaymentCancelCommand(refund.getPaymentKey(),
+                            refund.getOrderId(), refund.getRefundReason(), refund.getRefundAmount()));
 
             refundCommandService.updateStatus(
                     new RefundStatusUpdateCommand(
-                            refund.refundId(),
+                            refund.getId(),
                             RefundStatus.SUCCESS,
                             result.refundExtraDetails(),
                             null
@@ -55,7 +58,7 @@ public class RefundService {
         }
     }
 
-    public PaymentRefundResult handleRefundError(RefundDTO refundDTO, Throwable e) {
+    public PaymentRefundResult handleRefundError(Refund refund, Throwable e) {
         RefundStatus status;
         PaymentFailure failure;
 
@@ -75,7 +78,7 @@ public class RefundService {
 
         refundCommandService.updateStatus(
                 new RefundStatusUpdateCommand(
-                        refundDTO.refundId(),
+                        refund.getId(),
                         status,
                         null,
                         failure
@@ -84,5 +87,4 @@ public class RefundService {
 
         return new PaymentRefundResult(status, failure);
     }
-
 }

@@ -1,11 +1,16 @@
 package com.kosa.fillinv.payment.service.dto;
 
+import com.kosa.fillinv.payment.application.RefundFacade;
 import com.kosa.fillinv.payment.client.TossPaymentClient;
 import com.kosa.fillinv.payment.client.dto.PaymentCancelCommand;
 import com.kosa.fillinv.payment.domain.PSPConfirmationException;
 import com.kosa.fillinv.payment.domain.RefundExecutionResult;
 import com.kosa.fillinv.payment.domain.RefundExtraDetails;
+import com.kosa.fillinv.payment.entity.Refund;
 import com.kosa.fillinv.payment.entity.RefundStatus;
+import com.kosa.fillinv.payment.executor.RefundAsyncExecutor;
+import com.kosa.fillinv.payment.repository.RefundRepository;
+import com.kosa.fillinv.payment.service.RefundBuilder;
 import com.kosa.fillinv.payment.service.RefundCommandService;
 import com.kosa.fillinv.payment.service.RefundService;
 import org.junit.jupiter.api.DisplayName;
@@ -18,9 +23,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -33,8 +39,17 @@ class RefundServiceTest {
     @Mock
     private TossPaymentClient tossPaymentClient;
 
+    @Mock
+    private RefundAsyncExecutor refundAsyncExecutor;
+
+    @Mock
+    private RefundRepository refundRepository;
+
     @InjectMocks
     private RefundService refundService;
+
+    @InjectMocks
+    private RefundFacade refundFacade;
 
     private static PaymentRefundCommand mockCommand() {
         String paymentId = "paymentId";
@@ -46,13 +61,15 @@ class RefundServiceTest {
 
     @Test
     @DisplayName("결제 취소 요청 시 Refund 객체가 생성된다.")
-    void createRefund_whenPaymentCancelRequested() {
+    void createRequestRefund_whenPaymentCancelRequested() {
         PaymentRefundCommand command = mockCommand();
 
         when(refundCommandService.createRefund(any()))
                 .thenReturn(mockReturnDTO());
 
-        refundService.refund(command);
+        doNothing().when(refundAsyncExecutor).execute(any());
+
+        refundFacade.requestRefund(command);
 
         verify(refundCommandService).createRefund(
                 argThat(cmd ->
@@ -61,17 +78,18 @@ class RefundServiceTest {
                                 cmd.refundAmount().equals(command.refundAmount())
                 )
         );
+
+        verify(refundAsyncExecutor, times(1)).execute(any());
     }
 
     @Test
     @DisplayName("결제 취소 api 호출 직전에 Refund 객체 상태가 EXECUTING으로 변경된다.")
     void updateStatusToExecuting_beforeCallTossPaymentCancelApi() {
-        PaymentRefundCommand command = mockCommand();
+        Refund refund = new RefundBuilder(RefundStatus.NOT_STARTED).build();
 
-        when(refundCommandService.createRefund(any()))
-                .thenReturn(mockReturnDTO());
+        when(refundRepository.findById(anyString())).thenReturn(Optional.of(refund));
 
-        refundService.refund(command);
+        refundService.executeRefund(refund.getId());
 
         InOrder inOrder = inOrder(refundCommandService, tossPaymentClient);
 
@@ -83,24 +101,19 @@ class RefundServiceTest {
                 .cancel(any(PaymentCancelCommand.class));
     }
 
-    private RefundDTO mockReturnDTO() {
-        return mock(RefundDTO.class);
-    }
-
     @Test
     @DisplayName("결제 취소 api가 성공하면 Refund 객체 상태가 SUCCESS로 변경된다.")
     void updateStatusToSuccess_afterTossPaymentCancelApiSuccess() {
+        Refund refund = new RefundBuilder(RefundStatus.NOT_STARTED).build();
 
-        PaymentRefundCommand command = mockCommand();
+        when(refundRepository.findById(anyString())).thenReturn(Optional.of(refund));
 
         RefundExecutionResult result = mockSuccessResult();
 
-        when(refundCommandService.createRefund(any()))
-                .thenReturn(mockReturnDTO());
         when(tossPaymentClient.cancel(any(PaymentCancelCommand.class)))
                 .thenReturn(result);
 
-        refundService.refund(command);
+        refundService.executeRefund(refund.getId());
 
         verify(refundCommandService).updateStatus(argThat(cmd ->
                 cmd.status() == RefundStatus.SUCCESS));
@@ -109,14 +122,14 @@ class RefundServiceTest {
     @Test
     @DisplayName("결제 취소 api가 실패하면 Refund 객체 상태가 Failure로 변경된다.")
     void updateStatusToFailure_afterTossPaymentCancelApiFail() {
-        PaymentRefundCommand command = mockCommand();
+        Refund refund = new RefundBuilder(RefundStatus.NOT_STARTED).build();
 
-        when(refundCommandService.createRefund(any()))
-                .thenReturn(mockReturnDTO());
+        when(refundRepository.findById(anyString())).thenReturn(Optional.of(refund));
+
         when(tossPaymentClient.cancel(any(PaymentCancelCommand.class)))
                 .thenThrow(mockPSPConfirmationExceptionFail());
 
-        refundService.refund(command);
+        refundService.executeRefund(refund.getId());
 
         verify(refundCommandService).updateStatus(argThat(cmd ->
                 cmd.status() == RefundStatus.FAILURE));
@@ -125,19 +138,22 @@ class RefundServiceTest {
     @Test
     @DisplayName("결제 취소 api 결과를 알 수 없으면 Refund 객체 상태가 Unknown으로 변경된다.")
     void updateStatusToUnknown_afterTossPaymentCancelApiUnknownResult() {
-        PaymentRefundCommand command = mockCommand();
+        Refund refund = new RefundBuilder(RefundStatus.NOT_STARTED).build();
 
-        when(refundCommandService.createRefund(any()))
-                .thenReturn(mockReturnDTO());
+        when(refundRepository.findById(anyString())).thenReturn(Optional.of(refund));
+
         when(tossPaymentClient.cancel(any(PaymentCancelCommand.class)))
                 .thenThrow(mockPSPConfirmationExceptionUnknown());
 
-        refundService.refund(command);
+        refundService.executeRefund(refund.getId());
 
         verify(refundCommandService).updateStatus(argThat(cmd ->
                 cmd.status() == RefundStatus.UNKNOWN));
     }
 
+    private RefundDTO mockReturnDTO() {
+        return mock(RefundDTO.class);
+    }
 
     private PSPConfirmationException mockPSPConfirmationExceptionUnknown() {
         return PSPConfirmationException.builder()
