@@ -25,44 +25,25 @@ public class TossPaymentClient {
     private final String CANCEL_URI = "/v1/payments/{paymentKey}/cancel";
 
     public RefundExecutionResult cancel(PaymentCancelCommand command) {
-        int attempt = 0;
+        TossPaymentConfirmationResponse response =
+                tossRestClient.post()
+                        .uri(uriBuilder ->
+                                uriBuilder
+                                        .path(CANCEL_URI)
+                                        .build(command.paymentKey())) // paymentKey를 멱등키로 사용하여 결제 한건당 하나의 취소요청만 처리됨
+                        .header("Idempotency-Key", command.paymentKey())
+                        .body(new TossPaymentCancelRequest(
+                                command.cancelReason(),
+                                command.refundAmount()
+                        ))
+                        .retrieve()
+                        .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                tossErrorHandler()
+                        )
+                        .body(TossPaymentConfirmationResponse.class);
 
-        while (true) {
-            try {
-                TossPaymentConfirmationResponse response =
-                        tossRestClient.post()
-                                .uri(uriBuilder ->
-                                        uriBuilder
-                                                .path(CANCEL_URI)
-                                                .build(command.paymentKey())) // paymentKey를 멱등키로 사용하여 결제 한건당 하나의 취소요청만 처리됨
-                                .header("Idempotency-Key", command.paymentKey())
-                                .body(new TossPaymentCancelRequest(
-                                        command.cancelReason(),
-                                        command.refundAmount()
-                                ))
-                                .retrieve()
-                                .onStatus(
-                                        status -> status.is4xxClientError() || status.is5xxServerError(),
-                                        tossErrorHandler()
-                                )
-                                .body(TossPaymentConfirmationResponse.class);
-
-                return getRefundExecutionResult(response);
-
-            } catch (PSPConfirmationException e) {
-                attempt++;
-                if (!e.isRetryable() || attempt > MAX_RETRY_COUNT) {
-                    throw e;
-                }
-                backoff(attempt);
-            } catch (ResourceAccessException e) { // timeout / network
-                attempt++;
-                if (attempt > MAX_RETRY_COUNT) {
-                    throw e;
-                }
-                backoff(attempt);
-            }
-        }
+        return getRefundExecutionResult(response);
     }
 
     public PaymentExecutionResult confirm(PaymentConfirmCommand command) {
@@ -105,7 +86,7 @@ public class TossPaymentClient {
     }
 
 
-    private static PaymentExecutionResult getPaymentExecutionResult(TossPaymentConfirmationResponse response) {
+    private PaymentExecutionResult getPaymentExecutionResult(TossPaymentConfirmationResponse response) {
         return new PaymentExecutionResult(
                 response.paymentKey(),
                 response.orderId(),
@@ -121,7 +102,7 @@ public class TossPaymentClient {
         );
     }
 
-    private static RefundExecutionResult getRefundExecutionResult(TossPaymentConfirmationResponse response) {
+    private RefundExecutionResult getRefundExecutionResult(TossPaymentConfirmationResponse response) {
 
         // 하나의 결제 이벤트에 대해서 여러 취소 이벤트가 있을 수 있기 때문에 리스트 형태
         // 가장 최신의 데이터를 선택
